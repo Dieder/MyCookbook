@@ -1,0 +1,209 @@
+{
+  "entities": {
+    "RecipeRecord": {
+      "title": "RecipeRecord",
+      "description": "A user-created or AI-customized bistro recipe stored in the user's cookbook.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the recipe owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "chapterId": {
+          "type": "string",
+          "enum": ["hearth-harvest", "coastal-market", "orchard-patisserie"],
+          "maxLength": 40
+        },
+        "plateNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "region": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "season": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "prepMinutes": {
+          "type": "integer"
+        },
+        "cookMinutes": {
+          "type": "integer"
+        },
+        "baseServings": {
+          "type": "integer"
+        },
+        "heroImage": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "figureCaption": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 260
+        },
+        "storyExcerpt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "storyParagraphs": {
+          "type": "array",
+          "description": "Up to 4 editorial narrative paragraphs."
+        },
+        "pullQuote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 360
+        },
+        "pairingNote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 360
+        },
+        "chefAuthor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "ingredients": {
+          "type": "array",
+          "description": "Up to 30 structured ingredients with metric and imperial quantities."
+        },
+        "techniques": {
+          "type": "array",
+          "description": "Up to 4 interactive technique clip presets."
+        },
+        "steps": {
+          "type": "array",
+          "description": "Up to 15 numbered preparation steps with timers."
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["ai-generated", "ai-customized"],
+          "maxLength": 32
+        },
+        "parentRecipeId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "customizationNote": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "chapterId",
+        "plateNumber",
+        "title",
+        "subtitle",
+        "region",
+        "season",
+        "prepMinutes",
+        "cookMinutes",
+        "baseServings",
+        "heroImage",
+        "figureCaption",
+        "storyExcerpt",
+        "storyParagraphs",
+        "pullQuote",
+        "pairingNote",
+        "chefAuthor",
+        "ingredients",
+        "techniques",
+        "steps",
+        "sourceType",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "BookmarkRecord": {
+      "title": "BookmarkRecord",
+      "description": "User-saved bookmark, preferred person count, and kitchen margin note for a recipe.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "recipeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "isFavorite": {
+          "type": "boolean"
+        },
+        "servings": {
+          "type": "integer"
+        },
+        "kitchenNote": {
+          "type": "string",
+          "maxLength": 1200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "recipeId",
+        "isFavorite",
+        "servings",
+        "kitchenNote",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/recipes/{recipeId}": {
+      "schema": {
+        "$ref": "#/entities/RecipeRecord"
+      },
+      "description": "User-created and AI-customized recipes scoped strictly to ownerId."
+    },
+    "/bookmarks/{bookmarkId}": {
+      "schema": {
+        "$ref": "#/entities/BookmarkRecord"
+      },
+      "description": "Per-user recipe bookmarks, person counts, and margin notes scoped strictly to ownerId."
+    }
+  }
+}

@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root,
+[data-theme="whitepaper"] {
+  --bg-paper: #FBF9F5;
+  --bg-surface: #F7F4EE;
+  --bg-elevated: #EBE6DF;
+  --border-line: #D6CEBE;
+  --border-subtle: #EBE6DF;
+  --text-ink: #1C1917;
+  --text-muted: #57534E;
+  --accent-primary: #14532D;
+  --accent-primary-fg: #FBF9F5;
+  --accent-secondary: #78350F;
+  --accent-soft: rgba(120, 53, 15, 0.1);
+  --paper-dot: rgba(120, 53, 15, 0.03);
+}
+
+[data-theme="modern"] {
+  --bg-paper: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F5F9;
+  --border-line: #CBD5E1;
+  --border-subtle: #E2E8F0;
+  --text-ink: #0F172A;
+  --text-muted: #475569;
+  --accent-primary: #0F172A;
+  --accent-primary-fg: #F8FAFC;
+  --accent-secondary: #1D4ED8;
+  --accent-soft: rgba(29, 78, 216, 0.08);
+  --paper-dot: rgba(15, 23, 42, 0.025);
+}
+
+[data-theme="colorful"] {
+  --bg-paper: #FFFBF2;
+  --bg-surface: #FFF3DA;
+  --bg-elevated: #FDE6BA;
+  --border-line: #E5B973;
+  --border-subtle: #F3D9A4;
+  --text-ink: #1F2421;
+  --text-muted: #6B4423;
+  --accent-primary: #B91C1C;
+  --accent-primary-fg: #FFFDF9;
+  --accent-secondary: #047857;
+  --accent-soft: rgba(4, 120, 87, 0.1);
+  --paper-dot: rgba(185, 28, 28, 0.035);
+}
+
+@theme {
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-serif: "Lora", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-paper);
+    color: var(--text-ink);
+    font-family: "Lora", Georgia, serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-paper);
+    color: var(--text-ink);
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: "Playfair Display", Georgia, serif;
+  }
+
+  .font-mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.paper-folio {
+  background-color: var(--bg-paper);
+  background-image: radial-gradient(var(--paper-dot) 0.6px, transparent 0.6px);
+  background-size: 18px 18px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

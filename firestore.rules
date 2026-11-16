@@ -1,0 +1,210 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Deny all access unless explicitly matched below
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidRecipe(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'chapterId',
+          'plateNumber',
+          'title',
+          'subtitle',
+          'region',
+          'season',
+          'prepMinutes',
+          'cookMinutes',
+          'baseServings',
+          'heroImage',
+          'figureCaption',
+          'storyExcerpt',
+          'storyParagraphs',
+          'pullQuote',
+          'pairingNote',
+          'chefAuthor',
+          'ingredients',
+          'techniques',
+          'steps',
+          'sourceType',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'chapterId',
+          'plateNumber',
+          'title',
+          'subtitle',
+          'region',
+          'season',
+          'prepMinutes',
+          'cookMinutes',
+          'baseServings',
+          'heroImage',
+          'figureCaption',
+          'storyExcerpt',
+          'storyParagraphs',
+          'pullQuote',
+          'pairingNote',
+          'chefAuthor',
+          'ingredients',
+          'techniques',
+          'steps',
+          'sourceType',
+          'parentRecipeId',
+          'customizationNote',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.chapterId in ['hearth-harvest', 'coastal-market', 'orchard-patisserie'] &&
+        data.plateNumber is string && data.plateNumber.size() >= 1 && data.plateNumber.size() <= 32 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+        data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 240 &&
+        data.region is string && data.region.size() >= 1 && data.region.size() <= 80 &&
+        data.season is string && data.season.size() >= 1 && data.season.size() <= 40 &&
+        data.prepMinutes is int && data.prepMinutes >= 0 && data.prepMinutes <= 1440 &&
+        data.cookMinutes is int && data.cookMinutes >= 0 && data.cookMinutes <= 1440 &&
+        data.baseServings is int && data.baseServings >= 1 && data.baseServings <= 48 &&
+        data.heroImage is string && data.heroImage.size() >= 1 && data.heroImage.size() <= 300 &&
+        data.figureCaption is string && data.figureCaption.size() >= 1 && data.figureCaption.size() <= 260 &&
+        data.storyExcerpt is string && data.storyExcerpt.size() >= 1 && data.storyExcerpt.size() <= 500 &&
+        data.storyParagraphs is list && data.storyParagraphs.size() >= 1 && data.storyParagraphs.size() <= 4 &&
+        data.storyParagraphs[0] is string &&
+        data.pullQuote is string && data.pullQuote.size() >= 1 && data.pullQuote.size() <= 360 &&
+        data.pairingNote is string && data.pairingNote.size() >= 1 && data.pairingNote.size() <= 360 &&
+        data.chefAuthor is string && data.chefAuthor.size() >= 1 && data.chefAuthor.size() <= 100 &&
+        data.ingredients is list && data.ingredients.size() >= 1 && data.ingredients.size() <= 30 &&
+        data.ingredients[0] is map &&
+        data.techniques is list && data.techniques.size() <= 4 &&
+        (data.techniques.size() == 0 || data.techniques[0] is map) &&
+        data.steps is list && data.steps.size() >= 1 && data.steps.size() <= 15 &&
+        data.steps[0] is map &&
+        data.sourceType in ['ai-generated', 'ai-customized'] &&
+        (!('parentRecipeId' in data) || (isValidId(data.parentRecipeId))) &&
+        (!('customizationNote' in data) || (data.customizationNote is string && data.customizationNote.size() <= 400)) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidBookmark(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'recipeId',
+          'isFavorite',
+          'servings',
+          'kitchenNote',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'recipeId',
+          'isFavorite',
+          'servings',
+          'kitchenNote',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        isValidId(data.recipeId) &&
+        data.isFavorite is bool &&
+        data.servings is int && data.servings >= 1 && data.servings <= 48 &&
+        data.kitchenNote is string && data.kitchenNote.size() <= 1200 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    match /recipes/{recipeId} {
+      allow get: if isSignedIn() && isValidId(recipeId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(recipeId) &&
+        isValidRecipe(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(recipeId) &&
+        isValidRecipe(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'chapterId',
+          'plateNumber',
+          'title',
+          'subtitle',
+          'region',
+          'season',
+          'prepMinutes',
+          'cookMinutes',
+          'baseServings',
+          'heroImage',
+          'figureCaption',
+          'storyExcerpt',
+          'storyParagraphs',
+          'pullQuote',
+          'pairingNote',
+          'chefAuthor',
+          'ingredients',
+          'techniques',
+          'steps',
+          'sourceType',
+          'customizationNote',
+          'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(recipeId) && existing().ownerId == request.auth.uid;
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow get: if isSignedIn() && isValidId(bookmarkId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(bookmarkId) &&
+        isValidBookmark(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(bookmarkId) &&
+        isValidBookmark(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().recipeId == existing().recipeId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'isFavorite',
+          'servings',
+          'kitchenNote',
+          'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(bookmarkId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

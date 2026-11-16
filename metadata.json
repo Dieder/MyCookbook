@@ -1,0 +1,6 @@
+{
+  "name": "Maison Feuille — Seasonal Bistro Cookbook",
+  "description": "An editorial book-style seasonal bistro cookbook with large photography, culinary stories, scaled recipe cards, interactive preparation clips, and step-by-step cooking timers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
