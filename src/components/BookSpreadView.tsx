@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,6 +10,7 @@ import {
   PlayCircle,
   Plus,
   RotateCcw,
+  Star,
   Trash2,
   Users,
   Utensils,
@@ -17,13 +18,14 @@ import {
 } from 'lucide-react';
 import {
   formatPersonLabel,
-  getLocalizedChapters,
   UI_STRINGS,
 } from '../i18n/translations';
 import {
   ActiveTimer,
+  Chapter,
   LanguageCode,
   Recipe,
+  RecipeRating,
   TechniqueClip,
   UnitSystem,
 } from '../types/cookbook';
@@ -33,13 +35,16 @@ import {
   formatMinutesLabel,
   playSubtleClick,
 } from '../utils/formatters';
+import { resolveRecipeClips, resolveStepClip } from '../utils/youtube';
 import { EditorialPlateImage } from './EditorialPlateImage';
 
 interface BookSpreadViewProps {
   recipe: Recipe;
   allRecipes: Recipe[];
+  chapters: Chapter[];
   onSelectRecipe: (recipeId: string) => void;
   onBackToChapters: () => void;
+  onSelectChapter?: (chapterId: string) => void;
   onEnterCookMode: () => void;
   onOpenClip: (clip: TechniqueClip, recipeTitle: string) => void;
   onOpenCustomize: () => void;
@@ -68,14 +73,21 @@ interface BookSpreadViewProps {
   onPauseTimer: (id: string) => void;
   onResetTimer: (id: string) => void;
   onAddMinute: (id: string) => void;
+  ratings: RecipeRating[];
+  currentUserUid: string | null;
+  onSaveRating: (rating: number, note: string, existingId?: string) => Promise<void>;
+  onDeleteRating: (ratingId: string) => Promise<void>;
+  onGoToSettings: () => void;
   lang: LanguageCode;
 }
 
 export function BookSpreadView({
   recipe,
   allRecipes,
+  chapters,
   onSelectRecipe,
   onBackToChapters,
+  onSelectChapter,
   onEnterCookMode,
   onOpenClip,
   onOpenCustomize,
@@ -98,13 +110,39 @@ export function BookSpreadView({
   onPauseTimer,
   onResetTimer,
   onAddMinute,
+  ratings,
+  currentUserUid,
+  onSaveRating,
+  onDeleteRating,
+  onGoToSettings,
   lang,
 }: BookSpreadViewProps) {
   const [noteSavedFeedback, setNoteSavedFeedback] = useState(false);
   const t = UI_STRINGS[lang];
-  const chapters = getLocalizedChapters(lang);
 
-  const chapter = chapters.find((c) => c.id === recipe.chapterId);
+  const myRating = currentUserUid
+    ? ratings.find((r) => r.ownerId === currentUserUid)
+    : undefined;
+  const [draftStars, setDraftStars] = useState<number>(myRating?.rating ?? 5);
+  const [draftOneLiner, setDraftOneLiner] = useState<string>(myRating?.note ?? '');
+  const [savingRating, setSavingRating] = useState(false);
+
+  useEffect(() => {
+    setDraftStars(myRating?.rating ?? 5);
+    setDraftOneLiner(myRating?.note ?? '');
+  }, [recipe.id, myRating?.id, myRating?.rating, myRating?.note]);
+
+  const legacyChapterFallback: Record<string, string> = {
+    'hearth-harvest': 'comfort-food',
+    'coastal-market': 'dinner',
+    'orchard-patisserie': 'desserts',
+  };
+  const chapter =
+    chapters.find((c) => c.id === recipe.chapterId) ??
+    chapters.find((c) => c.id === legacyChapterFallback[recipe.chapterId]);
+  const parentChapter = chapter?.parentChapterId
+    ? chapters.find((c) => c.id === chapter.parentChapterId)
+    : undefined;
   const currentIndex = allRecipes.findIndex((r) => r.id === recipe.id);
   const prevRecipe = currentIndex > 0 ? allRecipes[currentIndex - 1] : null;
   const nextRecipe =
@@ -113,6 +151,7 @@ export function BookSpreadView({
       : null;
 
   const multiplier = servings / recipe.baseServings;
+  const availableClips = resolveRecipeClips(recipe);
 
   const handleNoteChange = (val: string) => {
     onSaveKitchenNote(val);
@@ -124,7 +163,7 @@ export function BookSpreadView({
     <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 sm:py-10 space-y-14">
       {/* Top Book Folio Navigation Strip */}
       <div className="pb-5 border-b border-[var(--border-line)] flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-muted)]">
+        <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-[var(--text-muted)]">
           <button
             type="button"
             onClick={onBackToChapters}
@@ -133,10 +172,36 @@ export function BookSpreadView({
             <ArrowLeft className="w-3.5 h-3.5" />
             {t.allChapters}
           </button>
+          {parentChapter && (
+            <>
+              <span aria-hidden="true">/</span>
+              {onSelectChapter ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectChapter(parentChapter.id)}
+                  className="hover:text-[var(--text-ink)] cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  {parentChapter.title}
+                </button>
+              ) : (
+                <span>{parentChapter.title}</span>
+              )}
+            </>
+          )}
           <span aria-hidden="true">/</span>
-          <span className="text-[var(--accent-secondary)]">
-            {t.chapterPrefix} {chapter?.romanIndex}: {chapter?.title}
-          </span>
+          {chapter && onSelectChapter ? (
+            <button
+              type="button"
+              onClick={() => onSelectChapter(chapter.id)}
+              className="text-[var(--accent-secondary)] hover:underline cursor-pointer whitespace-nowrap shrink-0"
+            >
+              {chapter.title}
+            </button>
+          ) : (
+            <span className="text-[var(--accent-secondary)]">
+              {chapter ? chapter.title : recipe.chapterId}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -210,47 +275,59 @@ export function BookSpreadView({
             priority
           />
 
-          {/* Preparation Technique Video Clips Shelf */}
-          <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 space-y-3">
-            <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
-              <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
-                {t.preparationClips}
-              </p>
-              <span className="text-xs font-mono text-[var(--text-muted)]">
-                {t.visualStudiesCount(recipe.techniques.length)}
-              </span>
-            </div>
+          {/* Preparation Technique Video Clips Shelf (hidden if no clips exist) */}
+          {availableClips.length > 0 && (
+            <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 space-y-3">
+              <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
+                <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
+                  {t.preparationClips}
+                </p>
+                <span className="text-xs font-mono text-[var(--text-muted)]">
+                  {t.visualStudiesCount(availableClips.length)}
+                </span>
+              </div>
 
-            <div className="space-y-2.5">
-              {recipe.techniques.map((clip) => (
-                <button
-                  key={clip.id}
-                  type="button"
-                  onClick={() => onOpenClip(clip, recipe.title)}
-                  className="w-full text-left p-3 bg-[var(--bg-paper)] border border-[var(--border-line)] hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between gap-4 cursor-pointer group"
-                >
-                  <div className="min-w-0">
-                    <p className="font-display text-base text-[var(--text-ink)] group-hover:text-[var(--accent-primary)] truncate">
-                      {clip.title}
-                    </p>
-                    <p className="text-xs font-serif text-[var(--text-muted)] truncate mt-0.5">
-                      {clip.subtitle}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--accent-secondary)] shrink-0">
-                    <PlayCircle className="w-4 h-4" />
-                    0:{String(clip.durationSeconds).padStart(2, '0')}
-                  </span>
-                </button>
-              ))}
+              <div className="space-y-2.5">
+                {availableClips.map((clip) => (
+                  <button
+                    key={clip.id}
+                    type="button"
+                    onClick={() => onOpenClip(clip, recipe.title)}
+                    className="w-full text-left p-3 bg-[var(--bg-paper)] border border-[var(--border-line)] hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between gap-4 cursor-pointer group"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-display text-base text-[var(--text-ink)] group-hover:text-[var(--accent-primary)] truncate">
+                        {clip.title}
+                      </p>
+                      <p className="text-xs font-serif text-[var(--text-muted)] truncate mt-0.5">
+                        {clip.subtitle}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--accent-secondary)] shrink-0">
+                      <PlayCircle className="w-4 h-4" />
+                      {clip.videoUrl
+                        ? t.youtubeClipHint
+                        : `0:${String(clip.durationSeconds).padStart(2, '0')}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Folio Story Column */}
         <div className="lg:col-span-6 lg:pl-6 lg:border-l lg:border-[var(--border-subtle)] space-y-6 max-w-[65ch]">
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+              {recipe.status === 'draft' && (
+                <>
+                  <span className="text-[var(--accent-secondary)] uppercase tracking-wider font-medium">
+                    {t.statusDraft}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
               <span className="text-[var(--accent-secondary)]">
                 {t.plateLabel(recipe.plateNumber)}
               </span>
@@ -530,9 +607,7 @@ export function BookSpreadView({
           <ol className="space-y-6">
             {recipe.steps.map((step) => {
               const isDone = completedSteps.includes(step.stepNumber);
-              const linkedClip = step.techniqueClipId
-                ? recipe.techniques.find((tClip) => tClip.id === step.techniqueClipId)
-                : undefined;
+              const linkedClip = resolveStepClip(step, recipe);
 
               const timerId = `${recipe.id}:${step.stepNumber}`;
               const activeTimer = timers.find((timer) => timer.id === timerId);
@@ -694,6 +769,172 @@ export function BookSpreadView({
             })}
           </ol>
         </div>
+      </section>
+
+      {/* Reader Ratings & Quoted One-Liner Notes (Bottom of Recipe) */}
+      <section className="pt-10 border-t border-[var(--border-line)] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
+              {t.ratingsEyebrow}
+            </p>
+            <h2 className="font-display text-2xl sm:text-3xl text-[var(--text-ink)] mt-0.5">
+              {t.ratingsTitle}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-xs text-[var(--text-muted)]">
+            {ratings.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-[var(--accent-secondary)] font-medium">
+                <Star className="w-3.5 h-3.5" fill="currentColor" />
+                {(
+                  ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length
+                ).toFixed(1)}
+              </span>
+            )}
+            <span>{t.ratingsCountLabel(ratings.length)}</span>
+          </div>
+        </div>
+
+        {/* Rating & One-Liner Form */}
+        {currentUserUid ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (savingRating) return;
+              setSavingRating(true);
+              try {
+                await onSaveRating(
+                  draftStars,
+                  draftOneLiner.replace(/[\r\n]+/g, ' ').trim(),
+                  myRating?.id
+                );
+              } finally {
+                setSavingRating(false);
+              }
+            }}
+            className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 sm:p-6 space-y-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <span className="text-xs font-mono uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                {t.yourRatingLabel}
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[1, 2, 3, 4, 5].map((starVal) => {
+                  const active = starVal <= draftStars;
+                  return (
+                    <button
+                      key={starVal}
+                      type="button"
+                      onClick={() => setDraftStars(starVal)}
+                      aria-label={`${starVal} / 5`}
+                      className={`p-1 cursor-pointer transition-colors ${
+                        active
+                          ? 'text-[var(--accent-secondary)]'
+                          : 'text-[var(--text-muted)]/40 hover:text-[var(--text-ink)]'
+                      }`}
+                    >
+                      <Star
+                        className="w-5 h-5"
+                        fill={active ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <label
+                  htmlFor={`rating-note-${recipe.id}`}
+                  className="sr-only"
+                >
+                  {t.oneLinerLabel}
+                </label>
+                <input
+                  id={`rating-note-${recipe.id}`}
+                  type="text"
+                  maxLength={140}
+                  value={draftOneLiner}
+                  onChange={(e) =>
+                    setDraftOneLiner(e.target.value.replace(/[\r\n]+/g, ' '))
+                  }
+                  placeholder={t.oneLinerPlaceholder}
+                  className="w-full px-3.5 py-2 bg-[var(--bg-paper)] border border-[var(--border-line)] text-sm font-serif text-[var(--text-ink)] placeholder:text-[var(--text-muted)]/60 focus:outline-none focus:border-[var(--accent-primary)]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="submit"
+                  disabled={savingRating}
+                  className="px-4 py-2 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-xs font-mono hover:opacity-90 disabled:opacity-50 cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  {myRating ? t.updateRatingBtn : t.submitRatingBtn}
+                </button>
+                {myRating && (
+                  <button
+                    type="button"
+                    onClick={() => void onDeleteRating(myRating.id)}
+                    className="px-3 py-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-muted)] hover:text-[var(--accent-secondary)] cursor-pointer whitespace-nowrap shrink-0"
+                  >
+                    {t.removeRatingBtn}
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        ) : (
+          <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm font-serif text-[var(--text-muted)]">
+              {t.signInToRatePrompt}
+            </p>
+            <button
+              type="button"
+              onClick={onGoToSettings}
+              className="px-4 py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] text-xs font-mono hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            >
+              {t.goToSettings}
+            </button>
+          </div>
+        )}
+
+        {/* Submitted Ratings & Quoted One-Liners */}
+        {ratings.length === 0 ? (
+          <p className="text-sm font-serif italic text-[var(--text-muted)]">
+            {t.noRatingsYet}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {ratings.map((item) => (
+              <article
+                key={item.id}
+                className="border border-[var(--border-line)] bg-[var(--bg-surface)]/70 p-4 space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-0.5 text-[var(--accent-secondary)]">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        className="w-3.5 h-3.5"
+                        fill={n <= item.rating ? 'currentColor' : 'none'}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs font-mono text-[var(--text-muted)] truncate">
+                    {item.authorName}
+                  </span>
+                </div>
+                {item.note && (
+                  <p className="font-serif italic text-base text-[var(--text-ink)] leading-snug">
+                    “{item.note}”
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Bottom Book Page Turn Footer */}

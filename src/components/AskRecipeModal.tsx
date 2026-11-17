@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { ArrowRight, Check, Clock, Loader2, Sparkles, X } from 'lucide-react';
 import {
   formatPersonLabel,
-  getLocalizedChapters,
   UI_STRINGS,
 } from '../i18n/translations';
-import { LanguageCode, Recipe } from '../types/cookbook';
+import { Chapter, LanguageCode, Recipe } from '../types/cookbook';
 import { formatMinutesLabel } from '../utils/formatters';
 
 interface AskRecipeModalProps {
@@ -13,8 +12,10 @@ interface AskRecipeModalProps {
   onClose: () => void;
   onRecipeCreated: (recipe: Omit<Recipe, 'id' | 'plateNumber'>) => Promise<Recipe>;
   onOpenSpread: (recipeId: string) => void;
+  chapters: Chapter[];
   isSignedIn: boolean;
-  onSignIn: () => Promise<void>;
+  canContribute: boolean;
+  onOpenSettings: () => void;
   lang: LanguageCode;
 }
 
@@ -23,12 +24,14 @@ export function AskRecipeModal({
   onClose,
   onRecipeCreated,
   onOpenSpread,
+  chapters,
   isSignedIn,
-  onSignIn,
+  canContribute,
+  onOpenSettings,
   lang,
 }: AskRecipeModalProps) {
   const [prompt, setPrompt] = useState('');
-  const [chapterId, setChapterId] = useState('hearth-harvest');
+  const [chapterId, setChapterId] = useState('dinner');
   const [persons, setPersons] = useState(4);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +40,14 @@ export function AskRecipeModal({
   if (!isOpen) return null;
 
   const t = UI_STRINGS[lang];
-  const chapters = getLocalizedChapters(lang);
+  const effectiveChapter =
+    chapters.find((c) => c.id === chapterId) ?? chapters[0];
+  const effectiveChapterId = effectiveChapter?.id || 'dinner';
+  const topChapters = chapters.filter((c) => !c.parentChapterId);
+  const topIds = new Set(topChapters.map((c) => c.id));
+  const orphanedSubchapters = chapters.filter(
+    (c) => c.parentChapterId && !topIds.has(c.parentChapterId)
+  );
 
   const handleClose = () => {
     setError(null);
@@ -62,7 +72,8 @@ export function AskRecipeModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          chapterId,
+          chapterId: effectiveChapterId,
+          chapterTitle: effectiveChapter?.title,
           persons,
           language: lang,
         }),
@@ -214,17 +225,20 @@ export function AskRecipeModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {!isSignedIn && (
+            {(!isSignedIn || !canContribute) && (
               <div className="p-3.5 bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs font-serif text-[var(--text-muted)]">
-                  {t.signInPrompt}
+                <p className="text-xs font-serif text-[var(--text-muted)] max-w-md">
+                  {!isSignedIn ? t.signInPrompt : t.contributorRequiredNotice}
                 </p>
                 <button
                   type="button"
-                  onClick={() => void onSignIn()}
+                  onClick={() => {
+                    onClose();
+                    onOpenSettings();
+                  }}
                   className="px-3 py-1.5 border border-[var(--accent-primary)] text-[var(--accent-primary)] text-xs font-mono hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  {t.signInGoogle}
+                  {t.goToSettings}
                 </button>
               </div>
             )}
@@ -257,13 +271,28 @@ export function AskRecipeModal({
                 </label>
                 <select
                   id="ask-recipe-chapter"
-                  value={chapterId}
+                  value={effectiveChapterId}
                   onChange={(e) => setChapterId(e.target.value)}
                   className="w-full px-3 py-2 bg-[var(--bg-surface)] border border-[var(--border-line)] text-sm font-serif text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
                 >
-                  {chapters.map((ch) => (
-                    <option key={ch.id} value={ch.id}>
-                      {ch.romanIndex}. {ch.title}
+                  {topChapters.map((parent) => {
+                    const subs = chapters.filter(
+                      (c) => c.parentChapterId === parent.id
+                    );
+                    return [
+                      <option key={parent.id} value={parent.id}>
+                        {parent.title}
+                      </option>,
+                      ...subs.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {'\u00A0\u00A0'}— {sub.title}
+                        </option>
+                      )),
+                    ];
+                  })}
+                  {orphanedSubchapters.map((orphan) => (
+                    <option key={orphan.id} value={orphan.id}>
+                      — {orphan.title}
                     </option>
                   ))}
                 </select>

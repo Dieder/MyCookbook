@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react';
-import { Bookmark, Clock, LogIn, LogOut, PlayCircle, Search, Sparkles } from 'lucide-react';
-import { getLocalizedChapters, UI_STRINGS } from '../i18n/translations';
-import { LanguageCode, Recipe, TechniqueClip } from '../types/cookbook';
+import { useEffect, useMemo, useState } from 'react';
+import { Bookmark, ChevronLeft, ChevronRight, Clock, PlayCircle, Search, Sparkles } from 'lucide-react';
+import { UI_STRINGS } from '../i18n/translations';
+import { Chapter, LanguageCode, Recipe, TechniqueClip } from '../types/cookbook';
+import { resolveRecipeClips } from '../utils/youtube';
 import { EditorialPlateImage } from './EditorialPlateImage';
 
 interface ChaptersGalleryProps {
   recipes: Recipe[];
+  chapters: Chapter[];
+  initialChapterId?: string;
   onSelectRecipe: (recipeId: string) => void;
   onOpenClip: (clip: TechniqueClip, recipeTitle: string) => void;
   onOpenAskRecipe: () => void;
@@ -13,14 +16,21 @@ interface ChaptersGalleryProps {
   onToggleFavorite: (recipeId: string) => void;
   savedOnly?: boolean;
   onBrowseAll?: () => void;
-  userEmail: string | null;
-  onSignIn: () => Promise<void>;
-  onSignOut: () => Promise<void>;
   lang: LanguageCode;
 }
 
+const LEGACY_CHAPTER_FALLBACK: Record<string, string> = {
+  'hearth-harvest': 'comfort-food',
+  'coastal-market': 'dinner',
+  'orchard-patisserie': 'desserts',
+};
+
+const PAGE_SIZE = 24;
+
 export function ChaptersGallery({
   recipes,
+  chapters,
+  initialChapterId = 'all',
   onSelectRecipe,
   onOpenClip,
   onOpenAskRecipe,
@@ -28,20 +38,67 @@ export function ChaptersGallery({
   onToggleFavorite,
   savedOnly = false,
   onBrowseAll,
-  userEmail,
-  onSignIn,
-  onSignOut,
   lang,
 }: ChaptersGalleryProps) {
-  const [selectedChapter, setSelectedChapter] = useState<string>('all');
+  const [selectedChapter, setSelectedChapter] = useState<string>(initialChapterId);
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
   const t = UI_STRINGS[lang];
-  const chapters = getLocalizedChapters(lang);
+
+  useEffect(() => {
+    setSelectedChapter(initialChapterId);
+  }, [initialChapterId]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedChapter, query, savedOnly]);
+
+  const topChapters = useMemo(
+    () => chapters.filter((c) => !c.parentChapterId),
+    [chapters]
+  );
+
+  const selectedChapterObj = useMemo(
+    () => chapters.find((c) => c.id === selectedChapter),
+    [chapters, selectedChapter]
+  );
+
+  const activeParentChapter = useMemo(() => {
+    if (!selectedChapterObj) return undefined;
+    if (selectedChapterObj.parentChapterId) {
+      return chapters.find((c) => c.id === selectedChapterObj.parentChapterId);
+    }
+    const hasChildren = chapters.some(
+      (c) => c.parentChapterId === selectedChapterObj.id
+    );
+    return hasChildren ? selectedChapterObj : undefined;
+  }, [chapters, selectedChapterObj]);
+
+  const activeSubchapters = useMemo(() => {
+    if (!activeParentChapter) return [];
+    return chapters.filter((c) => c.parentChapterId === activeParentChapter.id);
+  }, [chapters, activeParentChapter]);
 
   const filteredRecipes = useMemo(() => {
+    const chapterIdsSet = new Set(chapters.map((c) => c.id));
+    const allowedTargetIds = new Set<string>();
+    if (selectedChapter !== 'all') {
+      allowedTargetIds.add(selectedChapter);
+      for (const ch of chapters) {
+        if (ch.parentChapterId === selectedChapter) {
+          allowedTargetIds.add(ch.id);
+        }
+      }
+    }
+
     return recipes.filter((recipe) => {
       if (savedOnly && !favoriteIds.includes(recipe.id)) return false;
-      if (selectedChapter !== 'all' && recipe.chapterId !== selectedChapter) return false;
+      if (selectedChapter !== 'all') {
+        const resolvedChapterId = chapterIdsSet.has(recipe.chapterId)
+          ? recipe.chapterId
+          : LEGACY_CHAPTER_FALLBACK[recipe.chapterId] ?? recipe.chapterId;
+        if (!allowedTargetIds.has(resolvedChapterId)) return false;
+      }
       if (query.trim()) {
         const q = query.toLowerCase();
         return (
@@ -53,7 +110,20 @@ export function ChaptersGallery({
       }
       return true;
     });
-  }, [recipes, savedOnly, favoriteIds, selectedChapter, query]);
+  }, [recipes, chapters, savedOnly, favoriteIds, selectedChapter, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRecipes.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const startIdx = (safePage - 1) * PAGE_SIZE;
+  const pagedRecipes = useMemo(
+    () => filteredRecipes.slice(startIdx, startIdx + PAGE_SIZE),
+    [filteredRecipes, startIdx]
+  );
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 sm:py-10 space-y-10">
@@ -92,8 +162,8 @@ export function ChaptersGallery({
           </div>
         </div>
 
-        {/* Interactive chapter segmented filter buttons + Account Sync */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Interactive Chapter & Subchapter Filter Controls */}
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -106,46 +176,59 @@ export function ChaptersGallery({
             >
               {t.allChapters}
             </button>
-            {chapters.map((chap) => (
-              <button
-                key={chap.id}
-                type="button"
-                onClick={() => setSelectedChapter(chap.id)}
-                className={`px-3.5 py-1.5 text-xs font-mono border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  selectedChapter === chap.id
-                    ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                    : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-                }`}
-              >
-                {chap.romanIndex}. {chap.title}
-              </button>
-            ))}
+            {topChapters.map((chap) => {
+              const isActive =
+                selectedChapter === chap.id ||
+                activeParentChapter?.id === chap.id;
+              return (
+                <button
+                  key={chap.id}
+                  type="button"
+                  onClick={() => setSelectedChapter(chap.id)}
+                  className={`px-3.5 py-1.5 text-xs font-mono border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    isActive
+                      ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-muted)] hover:text-[var(--text-ink)]'
+                  }`}
+                >
+                  {chap.title}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono">
-            {userEmail ? (
-              <>
-                <span className="text-[var(--text-muted)] truncate max-w-[200px]">{userEmail}</span>
-                <button
-                  type="button"
-                  onClick={() => void onSignOut()}
-                  className="px-3 py-1.5 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  {t.signOut}
-                </button>
-              </>
-            ) : (
+          {activeParentChapter && activeSubchapters.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--border-subtle)]">
+              <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)] mr-1">
+                {t.subchaptersLabel}:
+              </span>
               <button
                 type="button"
-                onClick={() => void onSignIn()}
-                className="px-3 py-1.5 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer whitespace-nowrap shrink-0"
+                onClick={() => setSelectedChapter(activeParentChapter.id)}
+                className={`px-3 py-1 text-xs font-mono border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  selectedChapter === activeParentChapter.id
+                    ? 'bg-[var(--accent-secondary)] border-[var(--accent-secondary)] text-[var(--accent-primary-fg)]'
+                    : 'bg-[var(--bg-paper)] border-[var(--border-line)] text-[var(--text-muted)] hover:text-[var(--text-ink)]'
+                }`}
               >
-                <LogIn className="w-3.5 h-3.5" />
-                {t.signInSync}
+                {t.allInParentChapter(activeParentChapter.title)}
               </button>
-            )}
-          </div>
+              {activeSubchapters.map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setSelectedChapter(sub.id)}
+                  className={`px-3 py-1 text-xs font-mono border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    selectedChapter === sub.id
+                      ? 'bg-[var(--accent-secondary)] border-[var(--accent-secondary)] text-[var(--accent-primary-fg)]'
+                      : 'bg-[var(--bg-paper)] border-[var(--border-line)] text-[var(--text-muted)] hover:text-[var(--text-ink)]'
+                  }`}
+                >
+                  {sub.title}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -170,10 +253,24 @@ export function ChaptersGallery({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12">
-          {filteredRecipes.map((recipe: Recipe) => {
+        <div className="space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[var(--text-muted)] tabular-nums">
+            <span>
+              {t.showingPlatesRange(
+                startIdx + 1,
+                Math.min(startIdx + PAGE_SIZE, filteredRecipes.length),
+                filteredRecipes.length
+              )}
+            </span>
+            {totalPages > 1 && (
+              <span>{t.pageOfTotal(safePage, totalPages)}</span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12">
+            {pagedRecipes.map((recipe: Recipe) => {
             const isSaved = favoriteIds.includes(recipe.id);
-            const firstClip = recipe.techniques[0];
+            const firstClip = resolveRecipeClips(recipe)[0];
             const timedSteps = recipe.steps.filter((s) => s.durationSeconds).length;
 
             return (
@@ -263,6 +360,33 @@ export function ChaptersGallery({
               </article>
             );
           })}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="pt-4 border-t border-[var(--border-line)] flex items-center justify-between gap-4">
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => handlePageChange(safePage - 1)}
+                className="px-4 py-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] disabled:opacity-40 cursor-pointer disabled:cursor-default whitespace-nowrap shrink-0"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                {t.previousPage}
+              </button>
+              <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums">
+                {t.pageOfTotal(safePage, totalPages)}
+              </span>
+              <button
+                type="button"
+                disabled={safePage >= totalPages}
+                onClick={() => handlePageChange(safePage + 1)}
+                className="px-4 py-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] disabled:opacity-40 cursor-pointer disabled:cursor-default whitespace-nowrap shrink-0"
+              >
+                {t.nextPage}
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

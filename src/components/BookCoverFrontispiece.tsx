@@ -1,27 +1,37 @@
-import { ArrowRight, Bookmark, Sparkles } from 'lucide-react';
+import { Bookmark, Sparkles } from 'lucide-react';
 import { BOOK_METADATA } from '../data/cookbookData';
 import {
   BOOK_METADATA_I18N,
-  getLocalizedChapters,
   UI_STRINGS,
 } from '../i18n/translations';
-import { LanguageCode, Recipe } from '../types/cookbook';
+import { Chapter, LanguageCode, Recipe } from '../types/cookbook';
+import { resolveRecipeClips } from '../utils/youtube';
 import { EditorialPlateImage } from './EditorialPlateImage';
 
 interface BookCoverFrontispieceProps {
   recipes: Recipe[];
+  chapters: Chapter[];
   onSelectRecipe: (recipeId: string) => void;
   onBrowseChapters: () => void;
+  onSelectChapter?: (chapterId: string) => void;
   onOpenAskRecipe: () => void;
   favoriteIds: string[];
   onToggleFavorite: (recipeId: string) => void;
   lang: LanguageCode;
 }
 
+const LEGACY_CHAPTER_FALLBACK: Record<string, string> = {
+  'hearth-harvest': 'comfort-food',
+  'coastal-market': 'dinner',
+  'orchard-patisserie': 'desserts',
+};
+
 export function BookCoverFrontispiece({
   recipes,
+  chapters,
   onSelectRecipe,
   onBrowseChapters,
+  onSelectChapter,
   onOpenAskRecipe,
   favoriteIds,
   onToggleFavorite,
@@ -29,14 +39,70 @@ export function BookCoverFrontispiece({
 }: BookCoverFrontispieceProps) {
   const t = UI_STRINGS[lang];
   const meta = BOOK_METADATA_I18N[lang];
-  const chapters = getLocalizedChapters(lang);
 
-  const featuredRecipe: Recipe = recipes[0];
-  const totalClips = recipes.reduce((acc, r) => acc + r.techniques.length, 0);
+  const totalClips = recipes.reduce((acc, r) => acc + resolveRecipeClips(r).length, 0);
   const totalTimedSteps = recipes.reduce(
     (acc, r) => acc + r.steps.filter((s) => s.durationSeconds).length,
     0
   );
+
+  const chapterIdsSet = new Set(chapters.map((c) => c.id));
+  const resolveRecipeChapterId = (chapterId: string) =>
+    chapterIdsSet.has(chapterId)
+      ? chapterId
+      : LEGACY_CHAPTER_FALLBACK[chapterId] ?? chapterId;
+
+  const topChapters = chapters.filter((c) => !c.parentChapterId);
+
+  const renderRecipeRow = (recipe: Recipe) => {
+    const isSaved = favoriteIds.includes(recipe.id);
+    return (
+      <div
+        key={recipe.id}
+        className="group flex items-start justify-between gap-3 pb-3 border-b border-[var(--border-subtle)] last:border-b-0 last:pb-0"
+      >
+        <button
+          type="button"
+          onClick={() => onSelectRecipe(recipe.id)}
+          className="text-left flex-1 cursor-pointer min-w-0"
+        >
+          <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+            <span>{t.plateLabel(recipe.plateNumber)}</span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+            </span>
+            {resolveRecipeClips(recipe).length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>
+                  {resolveRecipeClips(recipe).length} {t.clipsUnit}
+                </span>
+              </>
+            )}
+          </div>
+          <p className="font-display text-base text-[var(--text-ink)] group-hover:text-[var(--accent-primary)] transition-colors mt-0.5 leading-snug">
+            {recipe.title}
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(recipe.id)}
+          aria-label={isSaved ? t.removeBookmarkAria : t.saveRecipeAria}
+          className={`p-2 cursor-pointer transition-colors shrink-0 ${
+            isSaved
+              ? 'text-[var(--accent-secondary)]'
+              : 'text-[var(--text-muted)]/60 hover:text-[var(--text-ink)]'
+          }`}
+        >
+          <Bookmark
+            className="w-4 h-4"
+            fill={isSaved ? 'currentColor' : 'none'}
+          />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 sm:py-12 space-y-16">
@@ -64,16 +130,8 @@ export function BookCoverFrontispiece({
           <div className="pt-8 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => onSelectRecipe(featuredRecipe.id)}
-              className="px-5 py-3 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-sm font-serif inline-flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shrink-0"
-            >
-              {t.openFirstPlate}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
               onClick={onOpenAskRecipe}
-              className="px-5 py-3 border border-[var(--accent-primary)] bg-[var(--bg-paper)] text-[var(--accent-primary)] text-sm font-serif inline-flex items-center gap-2 hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="px-5 py-3 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-sm font-serif inline-flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shrink-0"
             >
               <Sparkles className="w-4 h-4" />
               {t.askChefForRecipe}
@@ -100,15 +158,12 @@ export function BookCoverFrontispiece({
         </div>
       </section>
 
-      {/* Editorial Table of Contents across 3 Seasonal Chapters */}
+      {/* Our Kitchen Menu */}
       <section className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--border-line)] pb-5">
           <div>
-            <p className="text-xs font-mono uppercase tracking-[0.14em] text-[var(--accent-secondary)]">
-              {t.tableOfContents}
-            </p>
-            <h2 className="font-display text-2xl sm:text-3xl text-[var(--text-ink)] mt-1">
-              {t.threeChaptersTitle}
+            <h2 className="font-display text-2xl sm:text-3xl text-[var(--text-ink)]">
+              {t.chaptersIndexTitle}
             </h2>
           </div>
           <p className="text-xs font-mono text-[var(--text-muted)] tabular-nums">
@@ -116,78 +171,116 @@ export function BookCoverFrontispiece({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {chapters.map((chapter) => {
-            const chapterRecipes = recipes.filter((r) => r.chapterId === chapter.id);
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          {topChapters.map((chapter) => {
+            const subchapters = chapters.filter(
+              (sub) => sub.parentChapterId === chapter.id
+            );
+            const chapterRecipes = recipes.filter(
+              (r) => resolveRecipeChapterId(r.chapterId) === chapter.id
+            );
+
             return (
               <div
                 key={chapter.id}
                 className="flex flex-col justify-between border border-[var(--border-line)] bg-[var(--bg-surface)]/80 p-6 sm:p-7"
               >
                 <div>
-                  <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--border-line)]">
-                    <span className="font-mono text-xs text-[var(--accent-secondary)]">
-                      {t.chapterPrefix} {chapter.romanIndex}
-                    </span>
-                    <span className="text-xs font-serif italic text-[var(--text-muted)]">
+                  <div className="pb-2.5 border-b border-[var(--border-line)]">
+                    <span className="text-xs font-serif italic text-[var(--accent-secondary)]">
                       {chapter.seasonNote}
                     </span>
                   </div>
-                  <h3 className="font-display text-2xl text-[var(--text-ink)] mt-4">
-                    {chapter.title}
+                  <h3 className="font-display text-2xl text-[var(--text-ink)] mt-3.5">
+                    {onSelectChapter ? (
+                      <button
+                        type="button"
+                        onClick={() => onSelectChapter(chapter.id)}
+                        className="text-left hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
+                      >
+                        {chapter.title}
+                      </button>
+                    ) : (
+                      chapter.title
+                    )}
                   </h3>
                   <p className="text-sm font-serif text-[var(--text-muted)] mt-2 leading-relaxed">
                     {chapter.epigraph}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-[var(--border-line)] space-y-4">
-                  {chapterRecipes.map((recipe) => {
-                    const isSaved = favoriteIds.includes(recipe.id);
-                    return (
-                      <div
-                        key={recipe.id}
-                        className="group flex items-start justify-between gap-3 pb-3 border-b border-[var(--border-subtle)] last:border-b-0 last:pb-0"
-                      >
+                {(chapterRecipes.length > 0 || subchapters.length > 0) && (
+                  <div className="mt-6 pt-4 border-t border-[var(--border-line)] space-y-4">
+                    {chapterRecipes.slice(0, 3).map(renderRecipeRow)}
+
+                    {chapterRecipes.length > 0 && onSelectChapter && (
+                      <div className="pt-1">
                         <button
                           type="button"
-                          onClick={() => onSelectRecipe(recipe.id)}
-                          className="text-left flex-1 cursor-pointer min-w-0"
+                          onClick={() => onSelectChapter(chapter.id)}
+                          className="text-xs font-mono text-[var(--accent-primary)] hover:underline cursor-pointer tabular-nums"
                         >
-                          <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
-                            <span>{t.plateLabel(recipe.plateNumber)}</span>
-                            <span aria-hidden="true">·</span>
-                            <span>
-                              {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
-                            </span>
-                            <span aria-hidden="true">·</span>
-                            <span>
-                              {recipe.techniques.length} {t.clipsUnit}
-                            </span>
-                          </div>
-                          <p className="font-display text-base text-[var(--text-ink)] group-hover:text-[var(--accent-primary)] transition-colors mt-0.5 leading-snug">
-                            {recipe.title}
-                          </p>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onToggleFavorite(recipe.id)}
-                          aria-label={isSaved ? t.removeBookmarkAria : t.saveRecipeAria}
-                          className={`p-2 cursor-pointer transition-colors shrink-0 ${
-                            isSaved
-                              ? 'text-[var(--accent-secondary)]'
-                              : 'text-[var(--text-muted)]/60 hover:text-[var(--text-ink)]'
-                          }`}
-                        >
-                          <Bookmark
-                            className="w-4 h-4"
-                            fill={isSaved ? 'currentColor' : 'none'}
-                          />
+                          {t.viewAllPlatesCount(chapterRecipes.length)}
                         </button>
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
+
+                    {subchapters.length > 0 && (
+                      <div className="space-y-3 pt-1">
+                        <p className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
+                          {t.subchaptersLabel}
+                        </p>
+                        <div className="space-y-3">
+                          {subchapters.map((sub) => {
+                            const subRecipes = recipes.filter(
+                              (r) =>
+                                resolveRecipeChapterId(r.chapterId) === sub.id
+                            );
+                            return (
+                              <div
+                                key={sub.id}
+                                className="pl-3.5 pt-2 border-t border-[var(--border-subtle)] space-y-2"
+                              >
+                                <div className="flex items-baseline justify-between gap-2">
+                                  {onSelectChapter ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => onSelectChapter(sub.id)}
+                                      className="font-display text-base text-[var(--text-ink)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer text-left"
+                                    >
+                                      — {sub.title}
+                                    </button>
+                                  ) : (
+                                    <span className="font-display text-base text-[var(--text-ink)]">
+                                      — {sub.title}
+                                    </span>
+                                  )}
+                                  <span className="text-[11px] font-serif italic text-[var(--text-muted)] truncate">
+                                    {sub.seasonNote}
+                                  </span>
+                                </div>
+                                {subRecipes.length > 0 && (
+                                  <div className="space-y-2.5 pl-3">
+                                    {subRecipes.slice(0, 2).map(renderRecipeRow)}
+                                    {onSelectChapter && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onSelectChapter(sub.id)}
+                                        className="text-[11px] font-mono text-[var(--accent-primary)] hover:underline cursor-pointer tabular-nums block pt-0.5"
+                                      >
+                                        {t.viewAllPlatesCount(subRecipes.length)}
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

@@ -18,17 +18,61 @@ const ai = new GoogleGenAI({
 });
 
 const CHAPTER_IMAGE_MAP: Record<string, { src: string; defaultCaption: string }> = {
-  'hearth-harvest': {
-    src: '/src/assets/images/recipe_duck_confit_cassoulet_1794869454292.jpg',
-    defaultCaption: 'Chef’s Plate — Warm bistro hearth service from the Maison Feuille test kitchen.',
+  breakfast: {
+    src: '/src/assets/images/plate_breakfast_brioche_1794902209046.jpg',
+    defaultCaption: 'Chef’s Plate — Warm morning bistro service from the Maison Feuille kitchen.',
   },
-  'coastal-market': {
+  lunch: {
+    src: '/src/assets/images/recipe_mushroom_galette_1794869454174.jpg',
+    defaultCaption: 'Chef’s Plate — Midday market fare plated on warm stoneware.',
+  },
+  dinner: {
     src: '/src/assets/images/recipe_sea_bass_fennel_1794869454991.jpg',
-    defaultCaption: 'Chef’s Plate — Coastal market catch plated on warm stoneware.',
+    defaultCaption: 'Chef’s Plate — Evening bistro table service from the Maison Feuille test kitchen.',
   },
-  'orchard-patisserie': {
-    src: '/src/assets/images/recipe_poached_pear_tart_1794869456644.jpg',
-    defaultCaption: 'Chef’s Plate — Seasonal orchard pastry finished for afternoon service.',
+  'comfort-food': {
+    src: '/src/assets/images/recipe_duck_confit_cassoulet_1794869454292.jpg',
+    defaultCaption: 'Chef’s Plate — Warm hearth comfort food straight from cast iron.',
+  },
+  'quick-easy-meals': {
+    src: '/src/assets/images/recipe_sea_bass_fennel_1794869454991.jpg',
+    defaultCaption: 'Chef’s Plate — Brisk weeknight sauté plated warm from the skillet.',
+  },
+  vegetarian: {
+    src: '/src/assets/images/recipe_mushroom_galette_1794869454174.jpg',
+    defaultCaption: 'Chef’s Plate — Garden-forward vegetable harvest plated in season.',
+  },
+  'international-favorites': {
+    src: '/src/assets/images/recipe_heirloom_bouillabaisse_1794869455337.jpg',
+    defaultCaption: 'Chef’s Plate — Regional classic from our global bistro repertoire.',
+  },
+  'international-italian': {
+    src: '/src/assets/images/recipe_heirloom_bouillabaisse_1794869455337.jpg',
+    defaultCaption: 'Chef’s Plate — Italian trattoria classic finished with olive oil and herbs.',
+  },
+  'international-asian': {
+    src: '/src/assets/images/plate_asian_ramen_1794902208492.jpg',
+    defaultCaption: 'Chef’s Plate — Fragrant Asian aromatics and balanced umami glaze.',
+  },
+  'international-mediterranean': {
+    src: '/src/assets/images/recipe_heirloom_bouillabaisse_1794869455337.jpg',
+    defaultCaption: 'Chef’s Plate — Sun-drenched Mediterranean market catch and saffron broth.',
+  },
+  'international-mexican': {
+    src: '/src/assets/images/plate_mexican_tacos_1794902208640.jpg',
+    defaultCaption: 'Chef’s Plate — Vibrant Mexican chile, citrus, and roasted spice table.',
+  },
+  'baking-bread': {
+    src: '/src/assets/images/plate_artisan_sourdough_1794902210602.jpg',
+    defaultCaption: 'Chef’s Plate — Freshly baked crust and warm butter pastry from the oven.',
+  },
+  desserts: {
+    src: '/src/assets/images/recipe_burnt_honey_millefeuille_1794869456539.jpg',
+    defaultCaption: 'Chef’s Plate — Seasonal dessert plated for afternoon and evening service.',
+  },
+  drinks: {
+    src: '/src/assets/images/plate_bistro_drinks_1794902211731.jpg',
+    defaultCaption: 'Chef’s Plate — House-infused pour and cellar aperitif from the Maison Feuille bar.',
   },
 };
 
@@ -37,7 +81,8 @@ const RECIPE_RESPONSE_SCHEMA = {
   properties: {
     chapterId: {
       type: Type.STRING,
-      description: 'Must be one of: hearth-harvest, coastal-market, orchard-patisserie',
+      description:
+        'Chapter or subchapter slug identifier (e.g. breakfast, lunch, dinner, comfort-food, quick-easy-meals, vegetarian, international-italian, international-asian, international-mediterranean, international-mexican, baking-bread, desserts, drinks, or custom chapter slug)',
     },
     title: { type: Type.STRING },
     subtitle: { type: Type.STRING },
@@ -140,9 +185,12 @@ const RECIPE_RESPONSE_SCHEMA = {
   ],
 };
 
-function sanitizeChapterId(raw: unknown): 'hearth-harvest' | 'coastal-market' | 'orchard-patisserie' {
-  if (raw === 'coastal-market' || raw === 'orchard-patisserie') return raw;
-  return 'hearth-harvest';
+function sanitizeChapterId(raw: unknown): string {
+  if (typeof raw === 'string') {
+    const cleaned = raw.trim().replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 60);
+    if (cleaned.length > 0) return cleaned;
+  }
+  return 'dinner';
 }
 
 const VALID_PRESETS = new Set([
@@ -154,9 +202,9 @@ const VALID_PRESETS = new Set([
   'herb-searing',
 ]);
 
-function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?: string) {
-  const chapterId = sanitizeChapterId(parsed.chapterId);
-  const chapterMeta = CHAPTER_IMAGE_MAP[chapterId];
+function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?: string, preferredChapterId?: string) {
+  const chapterId = sanitizeChapterId(preferredChapterId || parsed.chapterId);
+  const chapterMeta = CHAPTER_IMAGE_MAP[chapterId] ?? CHAPTER_IMAGE_MAP.dinner;
   const heroImage =
     typeof fallbackImage === 'string' && fallbackImage.startsWith('/src/assets/images/')
       ? fallbackImage
@@ -318,7 +366,7 @@ async function startServer() {
 
   app.post('/api/recipes/generate', async (req, res) => {
     try {
-      const { prompt, chapterId, persons, language } = req.body ?? {};
+      const { prompt, chapterId, chapterTitle, persons, language } = req.body ?? {};
       if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
         return res.status(400).json({ error: 'Please describe the dish you would like to cook.' });
       }
@@ -330,6 +378,10 @@ async function startServer() {
 
       const targetPersons = Math.max(1, Math.min(24, Number(persons) || 4));
       const targetChapter = sanitizeChapterId(chapterId);
+      const targetChapterLabel =
+        typeof chapterTitle === 'string' && chapterTitle.trim()
+          ? `${chapterTitle.trim()} (${targetChapter})`
+          : targetChapter;
       const targetLang = resolveTargetLanguage(language);
 
       const response = await ai.models.generateContent({
@@ -337,10 +389,10 @@ async function startServer() {
         contents: `Create a complete, authentic bistro cookbook recipe for Maison Feuille based on this request: "${prompt.trim()}".
 Target language: ${targetLang.name} (code: "${targetLang.code}").
 Target servings (baseServings): ${targetPersons}.
-Preferred chapterId: "${targetChapter}" (unless another chapter from [hearth-harvest, coastal-market, orchard-patisserie] fits much better).
+Preferred chapter: ${targetChapterLabel}.
 Requirements:
 - Write EVERY prose and label field (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, ingredients[].name, ingredients[].metricUnit, ingredients[].imperialUnit, techniques[].title/subtitle/stages, steps[].title/instruction/timerLabel/tip) naturally in ${targetLang.name}.
-- Keep enum IDs strictly in their exact English schema identifiers: chapterId must be one of [hearth-harvest, coastal-market, orchard-patisserie] and techniques[].preset must be one of [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].
+- Keep chapterId set to "${targetChapter}" and techniques[].preset must be one of [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].
 - Write 2 warm editorial storyParagraphs in bistro cookbook prose, plus an evocative pullQuote in quotation marks and a concise pairingNote.
 - Provide 6 to 10 realistic ingredients with both exact metricAmount/metricUnit and imperialAmount/imperialUnit scaled for ${targetPersons} persons.
 - Include 1 to 2 interactive technique clips and 4 to 6 numbered cooking steps, each with a realistic durationSeconds (in seconds) and concise timerLabel for interactive step-by-step timers, linking techniqueClipId where relevant.`,
@@ -358,7 +410,7 @@ Requirements:
       }
 
       const parsed = JSON.parse(rawText) as Record<string, unknown>;
-      const normalized = normalizeRecipePayload(parsed);
+      const normalized = normalizeRecipePayload(parsed, undefined, targetChapter);
       return res.json({ recipe: normalized });
     } catch (err: unknown) {
       console.error('Error generating recipe:', err);
@@ -395,9 +447,9 @@ ${JSON.stringify(recipe)}
 
 Requirements:
 - Write ALL text fields (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, customizationNote, ingredients, techniques, steps) naturally in ${targetLang.name}.
-- Preserve the dish's editorial cookbook voice, baseServings (${Number(recipe.baseServings) || 4}), and chapterId (${String(recipe.chapterId || 'hearth-harvest')}) unless the customization changes them.
+- Preserve the dish's editorial cookbook voice, baseServings (${Number(recipe.baseServings) || 4}), and chapterId (${String(recipe.chapterId || 'dinner')}) unless the customization changes them.
 - Accurately modify title/subtitle if the main flavor or dietary profile changed, update ingredients (both metric and imperial amounts), adjust steps and durationSeconds timers accordingly, and explain the culinary adaptation clearly in customizationNote and storyParagraphs.
-- Keep chapterId in [hearth-harvest, coastal-market, orchard-patisserie] and 1 to 2 technique clips using presets from [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].`,
+- Keep chapterId as "${sanitizeChapterId(recipe.chapterId)}" and 1 to 2 technique clips using presets from [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].`,
         config: {
           systemInstruction: `You are the head chef of Maison Feuille adapting an existing bistro recipe to a guest’s dietary preference, flavor request, or time constraint in ${targetLang.name}, keeping measurements precise and timers accurate.`,
           responseMimeType: 'application/json',
@@ -412,7 +464,7 @@ Requirements:
       }
 
       const parsed = JSON.parse(rawText) as Record<string, unknown>;
-      const normalized = normalizeRecipePayload(parsed, recipe.heroImage);
+      const normalized = normalizeRecipePayload(parsed, recipe.heroImage, sanitizeChapterId(recipe.chapterId));
       normalized.customizationNote =
         normalized.customizationNote || `Adapted: ${instruction.trim()}`;
       return res.json({ recipe: normalized });

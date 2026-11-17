@@ -1,10 +1,11 @@
 import { Chapter, Recipe } from '../types/cookbook';
+import { EXPANDED_RECIPES } from './expandedRecipesCatalog';
 
 export const BOOK_METADATA = {
   brand: 'Maison Feuille',
-  volume: 'Volume IV · Autumn–Winter Monograph',
+  volume: 'A public cookbook',
   title: 'The Hearth, the Coast, and the Orchard',
-  subtitle: 'Six seasonal bistro plates, their kitchen stories, and timed preparations.',
+  subtitle: 'Seven hundred seasonal plates across fourteen chapters, their kitchen stories, and timed preparations.',
   coverImage: '/src/assets/images/bistro_cover_still_life_1794869453098.jpg',
   coverCaption:
     'Frontispiece — Morning mise en place on unbleached linen, Rue des Martyrs test kitchen.',
@@ -14,35 +15,127 @@ export const BOOK_METADATA = {
 
 export const CHAPTERS: Chapter[] = [
   {
-    id: 'hearth-harvest',
-    romanIndex: 'I',
-    title: 'Hearth & Harvest',
-    seasonNote: 'Late Autumn · Cellar Roots & Cast Iron',
+    id: 'breakfast',
+    title: 'Breakfast',
+    seasonNote: 'Morning Table · Eggs, Pastries & Griddle',
     epigraph:
-      'Slow-rendered duck fat, wild chanterelles brushed clean of pine needles, and deep copper pots set at the back of the range.',
+      'Sunlit morning plates, soft-folded omelettes, warm brioche, and café-au-lait rituals to start the day unhurried.',
+    sortOrder: 0,
   },
   {
-    id: 'coastal-market',
-    romanIndex: 'II',
-    title: 'Coastal & Market',
-    seasonNote: 'Early Winter · Tide, Fennel & Saffron',
+    id: 'lunch',
+    title: 'Lunch',
+    seasonNote: 'Midday Bistro · Tartines, Salads & Bowls',
     epigraph:
-      'Line-caught sea bass crisped skin-down and saffron broth steeped slowly with bruised fennel fronds and toasted bread.',
+      'Crisp market greens, savory galettes, warm broths, and light café plates tailored for the midday hour.',
+    sortOrder: 1,
   },
   {
-    id: 'orchard-patisserie',
-    romanIndex: 'III',
-    title: 'Orchard & Patisserie',
-    seasonNote: 'Orchard Cellar · Warm Pastry & Burnt Honey',
+    id: 'dinner',
+    title: 'Dinner',
+    seasonNote: 'Evening Service · Roast, Sear & Reduction',
     epigraph:
-      'Bosc pears poached in spiced cider reduction and laminated pastry shattered between spoons of Madagascar vanilla cream.',
+      'Centerpiece evening courses built on crisp sears, slow wine reductions, and composed table service.',
+    sortOrder: 2,
+  },
+  {
+    id: 'comfort-food',
+    title: 'Comfort Food',
+    seasonNote: 'Hearth & Cast Iron · Slow Braises & Stews',
+    epigraph:
+      'Slow-simmered beans, golden gratins, and deep cast-iron roasts that warm the kitchen from the back of the range.',
+    sortOrder: 3,
+  },
+  {
+    id: 'quick-easy-meals',
+    title: 'Quick & Easy Meals',
+    seasonNote: 'Weeknight Pantry · Under 30 Minutes',
+    epigraph:
+      'Decisive weeknight plates relying on pantry staples, sharp knife work, and bright pan sauces in half an hour.',
+    sortOrder: 4,
+  },
+  {
+    id: 'vegetarian',
+    title: 'Vegetarian',
+    seasonNote: 'Market Harvest · Roots, Grains & Herbs',
+    epigraph:
+      'Celebrations of wild mushrooms, roasted roots, nutty grains, and aged alpine cheeses without meat or fish.',
+    sortOrder: 5,
+  },
+  {
+    id: 'international-favorites',
+    title: 'International Favorites',
+    seasonNote: 'World Kitchens · Regional Classics',
+    epigraph:
+      'Beloved regional dishes spanning Italian trattorias, Asian woks, Mediterranean harbors, and vibrant Mexican kitchens.',
+    sortOrder: 6,
+  },
+  {
+    id: 'international-italian',
+    parentChapterId: 'international-favorites',
+    title: 'Italian',
+    seasonNote: 'Trattoria · Handmade Pasta, Olive Oil & Risotto',
+    epigraph:
+      'Silky pasta emulsions, slow-simmered ragù, blistered flatbreads, and bright Sicilian citrus finishes.',
+    sortOrder: 7,
+  },
+  {
+    id: 'international-asian',
+    parentChapterId: 'international-favorites',
+    title: 'Asian',
+    seasonNote: 'Wok & Broth · Ginger, Soy & Aromatic Steam',
+    epigraph:
+      'High-heat sear, clear dashi broths, hand-folded dumplings, and fragrant lemongrass and chili aromatics.',
+    sortOrder: 8,
+  },
+  {
+    id: 'international-mediterranean',
+    parentChapterId: 'international-favorites',
+    title: 'Mediterranean',
+    seasonNote: 'Sun & Sea · Saffron, Fennel & Coastal Catch',
+    epigraph:
+      'Harbor-side seafood stews, charred vegetables, extra-virgin olive oil, saffron threads, and sun-ripened herbs.',
+    sortOrder: 9,
+  },
+  {
+    id: 'international-mexican',
+    parentChapterId: 'international-favorites',
+    title: 'Mexican',
+    seasonNote: 'Comal & Chile · Masa, Mole & Bright Lime',
+    epigraph:
+      'Stone-ground masa, toasted dried chiles, slow-braised fillings, and crisp herb salsas finished with lime.',
+    sortOrder: 10,
+  },
+  {
+    id: 'baking-bread',
+    title: 'Baking & Bread',
+    seasonNote: 'Oven & Flour · Levain, Tarts & Laminated Dough',
+    epigraph:
+      'Crackling sourdough crusts, stone-milled galettes, blind-baked shortcrust shells, and warm buttered viennoiserie.',
+    sortOrder: 11,
+  },
+  {
+    id: 'desserts',
+    title: 'Desserts',
+    seasonNote: 'Patisserie · Burnt Honey, Custard & Fruit',
+    epigraph:
+      'Caramelized puff pastry, vanilla bean crème diplomat, poached orchard fruit, and delicate table sweets.',
+    sortOrder: 12,
+  },
+  {
+    id: 'drinks',
+    title: 'Drinks',
+    seasonNote: 'Cellar & Bar · Infusions, Apéritifs & Coffee',
+    epigraph:
+      'Herb-steeped shrubs, orchard spritzes, spiced winter infusions, and slow-poured café digestifs.',
+    sortOrder: 13,
   },
 ];
 
-export const RECIPES: Recipe[] = [
+export const FEATURED_RECIPES: Recipe[] = [
   {
     id: 'duck-confit-cassoulet',
-    chapterId: 'hearth-harvest',
+    chapterId: 'comfort-food',
     plateNumber: 'Plate I',
     title: 'Crisp Duck Confit over Tarbais Beans',
     subtitle: 'Caramelized shallots, fried sage, and slow-simmered garlic broth',
@@ -237,7 +330,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'chanterelle-buckwheat-galette',
-    chapterId: 'hearth-harvest',
+    chapterId: 'vegetarian',
     plateNumber: 'Plate II',
     title: 'Wild Chanterelle & Comté Buckwheat Galette',
     subtitle: 'Flaky stone-ground crust, thyme-roasted mushrooms, and browned butter',
@@ -416,7 +509,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'sea-bass-saffron-fennel',
-    chapterId: 'coastal-market',
+    chapterId: 'dinner',
     plateNumber: 'Plate III',
     title: 'Crispy Sea Bass with Braised Fennel & Saffron Beurre Blanc',
     subtitle: 'Scored skin, charred Meyer lemon, and velvety white wine reduction',
@@ -579,7 +672,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'heirloom-copper-bouillabaisse',
-    chapterId: 'coastal-market',
+    chapterId: 'international-mediterranean',
     plateNumber: 'Plate IV',
     title: 'Copper-Pot Coastal Bouillabaisse & Rouille',
     subtitle: 'Wild mussels, king prawns, saffron tomato broth, and garlic toast',
@@ -720,7 +813,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'poached-pear-frangipane-tart',
-    chapterId: 'orchard-patisserie',
+    chapterId: 'baking-bread',
     plateNumber: 'Plate V',
     title: 'Spiced Poached Pear & Almond Frangipane Tart',
     subtitle: 'Fluted shortcrust, toasted almond cream, and thyme pear glaze',
@@ -862,7 +955,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'burnt-honey-fig-millefeuille',
-    chapterId: 'orchard-patisserie',
+    chapterId: 'desserts',
     plateNumber: 'Plate VI',
     title: 'Burnt Honey & Roasted Fig Mille-Feuille',
     subtitle: 'Caramelized inverted puff pastry with vanilla bean crème diplomat',
@@ -1017,3 +1110,5 @@ export const RECIPES: Recipe[] = [
     ],
   },
 ];
+
+export const RECIPES: Recipe[] = [...FEATURED_RECIPES, ...EXPANDED_RECIPES];

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Utensils } from 'lucide-react';
 
 interface EditorialPlateImageProps {
@@ -19,6 +19,10 @@ export function EditorialPlateImage({
   priority = false,
 }: EditorialPlateImageProps) {
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   return (
     <figure className={`m-0 ${className}`}>

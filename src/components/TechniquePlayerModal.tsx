@@ -3,6 +3,7 @@ import { Pause, Play, RotateCcw, Repeat, X } from 'lucide-react';
 import { UI_STRINGS } from '../i18n/translations';
 import { LanguageCode, TechniqueClip, TechniquePreset } from '../types/cookbook';
 import { formatCountdown } from '../utils/formatters';
+import { toYouTubeEmbedUrl } from '../utils/youtube';
 
 interface TechniquePlayerModalProps {
   clip: TechniqueClip | null;
@@ -273,28 +274,32 @@ export function TechniquePlayerModal({
   const [speed, setSpeed] = useState<0.5 | 1 | 1.5>(1);
   const [loop, setLoop] = useState(true);
   const t = UI_STRINGS[lang];
+  const youtubeEmbedUrl = useMemo(
+    () => (clip ? toYouTubeEmbedUrl(clip.videoUrl) : null),
+    [clip]
+  );
 
   useEffect(() => {
     setCurrentTime(0);
     setIsPlaying(true);
     setSpeed(1);
-  }, [clip?.id]);
+  }, [clip?.id, clip?.videoUrl]);
 
   useEffect(() => {
     if (!clip) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === ' ') {
+      if (e.key === ' ' && !youtubeEmbedUrl) {
         e.preventDefault();
         setIsPlaying((p) => !p);
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [clip, onClose]);
+  }, [clip, onClose, youtubeEmbedUrl]);
 
   useEffect(() => {
-    if (!clip || !isPlaying) return;
+    if (!clip || !isPlaying || youtubeEmbedUrl) return;
     let last = performance.now();
     let rafId = 0;
 
@@ -315,19 +320,19 @@ export function TechniquePlayerModal({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [clip, isPlaying, speed, loop]);
+  }, [clip, isPlaying, speed, loop, youtubeEmbedUrl]);
 
   useEffect(() => {
-    if (!clip || !canvasRef.current) return;
+    if (!clip || youtubeEmbedUrl || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const progress = clip.durationSeconds > 0 ? currentTime / clip.durationSeconds : 0;
     drawTechniqueFrame(ctx, canvas.width, canvas.height, progress, clip.preset, isPlaying);
-  }, [clip, currentTime, isPlaying]);
+  }, [clip, currentTime, isPlaying, youtubeEmbedUrl]);
 
   const activeStage = useMemo(() => {
-    if (!clip) return null;
+    if (!clip || clip.stages.length === 0) return null;
     let current = clip.stages[0];
     for (const stage of clip.stages) {
       if (currentTime >= stage.timeSeconds) {
@@ -373,161 +378,175 @@ export function TechniquePlayerModal({
           </button>
         </div>
 
-        {/* Visual stage: Canvas motion sequence + Dish keyframe inset */}
+        {/* Visual stage: Embedded YouTube player OR Canvas motion sequence */}
         <div className="relative aspect-[16/9] bg-[#161311]">
-          <canvas
-            ref={canvasRef}
-            width={960}
-            height={540}
-            className="w-full h-full block"
-          />
-
-          {activeStage && (
-            <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-4 pointer-events-none">
-              <div className="bg-[#1C1917]/85 border border-[#D6CEBE]/25 px-4 py-2.5 max-w-md">
-                <p className="text-[11px] font-mono text-[#FDE68A]">
-                  {activeStage.heatSetting}
-                </p>
-                <p className="font-display text-base text-[#FBF9F5] mt-0.5">
-                  {activeStage.title}
-                </p>
-                <p className="text-xs font-serif text-[#EBE6DF] mt-1 leading-relaxed">
-                  {activeStage.cue}
-                </p>
-              </div>
-
-              <div className="hidden sm:block w-36 border border-[#D6CEBE]/40 bg-[#1C1917] p-1">
-                <img
-                  src={clip.keyframeImage}
-                  alt={clip.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full aspect-[4/3] object-cover"
-                />
-                <p className="text-[10px] font-mono text-[#D6CEBE] mt-1 px-1 truncate">
-                  {t.targetPlate}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Stage timeline markers on bottom scrim */}
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pt-10 pb-4">
-            <div className="relative h-2 bg-white/20 cursor-pointer mb-3">
-              <div
-                className="h-full bg-[#D97706]"
-                style={{ width: `${progressPct}%` }}
+          {youtubeEmbedUrl ? (
+            <iframe
+              src={youtubeEmbedUrl}
+              title={clip.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-full border-0 block"
+            />
+          ) : (
+            <>
+              <canvas
+                ref={canvasRef}
+                width={960}
+                height={540}
+                className="w-full h-full block"
               />
-              {clip.stages.map((st) => {
-                const leftPct = (st.timeSeconds / clip.durationSeconds) * 100;
-                return (
-                  <button
-                    key={st.title}
-                    type="button"
-                    onClick={() => setCurrentTime(st.timeSeconds)}
-                    title={`${st.title} (${formatCountdown(st.timeSeconds)})`}
-                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#FBF9F5] border border-[#1C1917] cursor-pointer hover:scale-125 transition-transform"
-                    style={{ left: `${leftPct}%` }}
+
+              {activeStage && (
+                <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-4 pointer-events-none">
+                  <div className="bg-[#1C1917]/85 border border-[#D6CEBE]/25 px-4 py-2.5 max-w-md">
+                    <p className="text-[11px] font-mono text-[#FDE68A]">
+                      {activeStage.heatSetting}
+                    </p>
+                    <p className="font-display text-base text-[#FBF9F5] mt-0.5">
+                      {activeStage.title}
+                    </p>
+                    <p className="text-xs font-serif text-[#EBE6DF] mt-1 leading-relaxed">
+                      {activeStage.cue}
+                    </p>
+                  </div>
+
+                  <div className="hidden sm:block w-36 border border-[#D6CEBE]/40 bg-[#1C1917] p-1">
+                    <img
+                      src={clip.keyframeImage}
+                      alt={clip.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full aspect-[4/3] object-cover"
+                    />
+                    <p className="text-[10px] font-mono text-[#D6CEBE] mt-1 px-1 truncate">
+                      {t.targetPlate}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Stage timeline markers on bottom scrim */}
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pt-10 pb-4">
+                <div className="relative h-2 bg-white/20 cursor-pointer mb-3">
+                  <div
+                    className="h-full bg-[#D97706]"
+                    style={{ width: `${progressPct}%` }}
                   />
-                );
-              })}
-              <input
-                type="range"
-                min={0}
-                max={clip.durationSeconds}
-                step={0.1}
-                value={currentTime}
-                onChange={(e) => setCurrentTime(Number(e.target.value))}
-                aria-label="Scrub preparation clip timeline"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
+                  {clip.stages.map((st) => {
+                    const leftPct = (st.timeSeconds / clip.durationSeconds) * 100;
+                    return (
+                      <button
+                        key={st.title}
+                        type="button"
+                        onClick={() => setCurrentTime(st.timeSeconds)}
+                        title={`${st.title} (${formatCountdown(st.timeSeconds)})`}
+                        className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#FBF9F5] border border-[#1C1917] cursor-pointer hover:scale-125 transition-transform"
+                        style={{ left: `${leftPct}%` }}
+                      />
+                    );
+                  })}
+                  <input
+                    type="range"
+                    min={0}
+                    max={clip.durationSeconds}
+                    step={0.1}
+                    value={currentTime}
+                    onChange={(e) => setCurrentTime(Number(e.target.value))}
+                    aria-label="Scrub preparation clip timeline"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 text-[#FBF9F5]">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsPlaying((p) => !p)}
-                  className="px-3.5 py-1.5 bg-[#FBF9F5] text-[#1C1917] text-xs font-mono flex items-center gap-1.5 cursor-pointer hover:bg-[#EBE6DF] whitespace-nowrap shrink-0"
-                >
-                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                  {isPlaying ? t.pause : t.play}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentTime(0);
-                    setIsPlaying(true);
-                  }}
-                  aria-label={t.restart}
-                  className="p-1.5 border border-white/25 hover:bg-white/10 cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-xs font-mono tabular-nums text-[#EBE6DF]">
-                  {formatCountdown(currentTime)} / {formatCountdown(clip.durationSeconds)}
-                </span>
+                <div className="flex flex-wrap items-center justify-between gap-4 text-[#FBF9F5]">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsPlaying((p) => !p)}
+                      className="px-3.5 py-1.5 bg-[#FBF9F5] text-[#1C1917] text-xs font-mono flex items-center gap-1.5 cursor-pointer hover:bg-[#EBE6DF] whitespace-nowrap shrink-0"
+                    >
+                      {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      {isPlaying ? t.pause : t.play}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentTime(0);
+                        setIsPlaying(true);
+                      }}
+                      aria-label={t.restart}
+                      className="p-1.5 border border-white/25 hover:bg-white/10 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="text-xs font-mono tabular-nums text-[#EBE6DF]">
+                      {formatCountdown(currentTime)} / {formatCountdown(clip.durationSeconds)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {([0.5, 1, 1.5] as const).map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => setSpeed(rate)}
+                        className={`px-2.5 py-1 text-xs font-mono border cursor-pointer whitespace-nowrap shrink-0 ${
+                          speed === rate
+                            ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
+                            : 'border-white/25 text-[#EBE6DF] hover:bg-white/10'
+                        }`}
+                      >
+                        {rate}×
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setLoop((l) => !l)}
+                      aria-label={t.loop}
+                      className={`px-2.5 py-1 text-xs font-mono border flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
+                        loop
+                          ? 'bg-white/15 border-white/40 text-[#FBF9F5]'
+                          : 'border-white/20 text-white/60'
+                      }`}
+                    >
+                      <Repeat className="w-3 h-3" />
+                      {t.loop}
+                    </button>
+                  </div>
+                </div>
               </div>
+            </>
+          )}
+        </div>
 
-              <div className="flex items-center gap-2">
-                {([0.5, 1, 1.5] as const).map((rate) => (
-                  <button
-                    key={rate}
-                    type="button"
-                    onClick={() => setSpeed(rate)}
-                    className={`px-2.5 py-1 text-xs font-mono border cursor-pointer whitespace-nowrap shrink-0 ${
-                      speed === rate
-                        ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                        : 'border-white/25 text-[#EBE6DF] hover:bg-white/10'
-                    }`}
-                  >
-                    {rate}×
-                  </button>
-                ))}
+        {/* Clickable technique stage breakdown (shown when stages exist) */}
+        {clip.stages.length > 0 && (
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-paper)]">
+            {clip.stages.map((st, idx) => {
+              const isCurrent = activeStage?.title === st.title;
+              return (
                 <button
+                  key={st.title}
                   type="button"
-                  onClick={() => setLoop((l) => !l)}
-                  aria-label={t.loop}
-                  className={`px-2.5 py-1 text-xs font-mono border flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
-                    loop
-                      ? 'bg-white/15 border-white/40 text-[#FBF9F5]'
-                      : 'border-white/20 text-white/60'
+                  onClick={() => setCurrentTime(st.timeSeconds)}
+                  className={`text-left p-4 border transition-colors cursor-pointer ${
+                    isCurrent
+                      ? 'bg-[var(--bg-surface)] border-[var(--accent-primary)]'
+                      : 'bg-[var(--bg-paper)] border-[var(--border-line)] hover:bg-[var(--bg-surface)]'
                   }`}
                 >
-                  <Repeat className="w-3 h-3" />
-                  {t.loop}
+                  <div className="flex items-center justify-between gap-2 text-xs font-mono text-[var(--accent-secondary)]">
+                    <span>{t.stagePrefix(idx + 1)}</span>
+                    <span>{formatCountdown(st.timeSeconds)}</span>
+                  </div>
+                  <p className="font-display text-base text-[var(--text-ink)] mt-1">{st.title}</p>
+                  <p className="text-xs font-serif text-[var(--text-muted)] mt-1.5 leading-relaxed">
+                    {st.cue}
+                  </p>
                 </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Clickable technique stage breakdown */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-paper)]">
-          {clip.stages.map((st, idx) => {
-            const isCurrent = activeStage?.title === st.title;
-            return (
-              <button
-                key={st.title}
-                type="button"
-                onClick={() => setCurrentTime(st.timeSeconds)}
-                className={`text-left p-4 border transition-colors cursor-pointer ${
-                  isCurrent
-                    ? 'bg-[var(--bg-surface)] border-[var(--accent-primary)]'
-                    : 'bg-[var(--bg-paper)] border-[var(--border-line)] hover:bg-[var(--bg-surface)]'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2 text-xs font-mono text-[var(--accent-secondary)]">
-                  <span>{t.stagePrefix(idx + 1)}</span>
-                  <span>{formatCountdown(st.timeSeconds)}</span>
-                </div>
-                <p className="font-display text-base text-[var(--text-ink)] mt-1">{st.title}</p>
-                <p className="text-xs font-serif text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                  {st.cue}
-                </p>
-              </button>
-            );
-          })}
-        </div>
+        )}
       </div>
     </div>
   );

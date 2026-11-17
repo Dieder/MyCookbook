@@ -24,6 +24,7 @@ import {
   formatCulinaryQuantity,
   playSubtleClick,
 } from '../utils/formatters';
+import { resolveStepClip } from '../utils/youtube';
 
 interface CookModeOverlayProps {
   recipe: Recipe;
@@ -67,9 +68,7 @@ export function CookModeOverlay({
 
   const step = recipe.steps[stepIdx] ?? recipe.steps[0];
   const multiplier = servings / recipe.baseServings;
-  const linkedClip = step.techniqueClipId
-    ? recipe.techniques.find((tech) => tech.id === step.techniqueClipId)
-    : undefined;
+  const linkedClip = resolveStepClip(step, recipe);
 
   const timerId = `${recipe.id}:${step.stepNumber}`;
   const activeTimer = timers.find((timer) => timer.id === timerId);

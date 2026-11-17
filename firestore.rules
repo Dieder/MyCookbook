@@ -26,6 +26,89 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
 
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'dieder.timmerman@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    function isContributorOrAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['contributor', 'admin']
+      );
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid',
+          'email',
+          'displayName',
+          'photoURL',
+          'role',
+          'contributorRequestStatus',
+          'contributorRequestNote',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'photoURL',
+          'role',
+          'contributorRequestStatus',
+          'contributorRequestNote',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.uid) &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 180 &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120 &&
+        data.photoURL is string && data.photoURL.size() <= 500 &&
+        data.role in ['reader', 'contributor', 'admin'] &&
+        data.contributorRequestStatus in ['none', 'pending', 'approved', 'rejected'] &&
+        data.contributorRequestNote is string && data.contributorRequestNote.size() <= 240 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidChapter(data) {
+      return data.keys().hasAll([
+          'title',
+          'seasonNote',
+          'epigraph',
+          'parentChapterId',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title',
+          'seasonNote',
+          'epigraph',
+          'parentChapterId',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+        data.seasonNote is string && data.seasonNote.size() >= 1 && data.seasonNote.size() <= 160 &&
+        data.epigraph is string && data.epigraph.size() >= 1 && data.epigraph.size() <= 500 &&
+        data.parentChapterId is string && data.parentChapterId.size() <= 60 &&
+        data.parentChapterId.matches('^$|^[a-zA-Z0-9_\\-]+$') &&
+        data.sortOrder is int && data.sortOrder >= 0 && data.sortOrder <= 1000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
     function isValidRecipe(data) {
       return data.keys().hasAll([
           'ownerId',
@@ -49,6 +132,7 @@ service cloud.firestore {
           'techniques',
           'steps',
           'sourceType',
+          'status',
           'createdAt',
           'updatedAt'
         ]) &&
@@ -74,14 +158,15 @@ service cloud.firestore {
           'techniques',
           'steps',
           'sourceType',
+          'status',
           'parentRecipeId',
           'customizationNote',
           'createdAt',
           'updatedAt'
         ]) &&
         isValidId(data.ownerId) &&
-        data.ownerId == request.auth.uid &&
-        data.chapterId in ['hearth-harvest', 'coastal-market', 'orchard-patisserie'] &&
+        data.chapterId is string && data.chapterId.size() >= 1 && data.chapterId.size() <= 60 &&
+        data.chapterId.matches('^[a-zA-Z0-9_\\-]+$') &&
         data.plateNumber is string && data.plateNumber.size() >= 1 && data.plateNumber.size() <= 32 &&
         data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
         data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 240 &&
@@ -90,7 +175,7 @@ service cloud.firestore {
         data.prepMinutes is int && data.prepMinutes >= 0 && data.prepMinutes <= 1440 &&
         data.cookMinutes is int && data.cookMinutes >= 0 && data.cookMinutes <= 1440 &&
         data.baseServings is int && data.baseServings >= 1 && data.baseServings <= 48 &&
-        data.heroImage is string && data.heroImage.size() >= 1 && data.heroImage.size() <= 300 &&
+        data.heroImage is string && data.heroImage.size() >= 1 && data.heroImage.size() <= 250000 &&
         data.figureCaption is string && data.figureCaption.size() >= 1 && data.figureCaption.size() <= 260 &&
         data.storyExcerpt is string && data.storyExcerpt.size() >= 1 && data.storyExcerpt.size() <= 500 &&
         data.storyParagraphs is list && data.storyParagraphs.size() >= 1 && data.storyParagraphs.size() <= 4 &&
@@ -104,7 +189,8 @@ service cloud.firestore {
         (data.techniques.size() == 0 || data.techniques[0] is map) &&
         data.steps is list && data.steps.size() >= 1 && data.steps.size() <= 15 &&
         data.steps[0] is map &&
-        data.sourceType in ['ai-generated', 'ai-customized'] &&
+        data.sourceType in ['ai-generated', 'ai-customized', 'contributor'] &&
+        data.status in ['draft', 'published'] &&
         (!('parentRecipeId' in data) || (isValidId(data.parentRecipeId))) &&
         (!('customizationNote' in data) || (data.customizationNote is string && data.customizationNote.size() <= 400)) &&
         data.createdAt is timestamp &&
@@ -140,18 +226,143 @@ service cloud.firestore {
         data.updatedAt is timestamp;
     }
 
-    match /recipes/{recipeId} {
-      allow get: if isSignedIn() && isValidId(recipeId) && existing().ownerId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    function isValidRating(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'authorName',
+          'recipeId',
+          'rating',
+          'note',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'authorName',
+          'recipeId',
+          'rating',
+          'note',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80 &&
+        isValidId(data.recipeId) &&
+        data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+        data.note is string && data.note.size() <= 140 &&
+        !data.note.matches('.*[\r\n].*') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (userId == request.auth.uid || isAdmin());
+      allow list: if isBootstrappedAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+
       allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        userId == request.auth.uid &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == request.auth.uid &&
+        incoming().email == request.auth.token.email &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (
+          (isBootstrappedAdmin() && incoming().role == 'admin' && incoming().contributorRequestStatus == 'approved') ||
+          (!isBootstrappedAdmin() && incoming().role == 'reader' && incoming().contributorRequestStatus == 'none')
+        );
+
+      allow update: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().email == existing().email &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          (
+            userId == request.auth.uid &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'displayName',
+              'photoURL',
+              'contributorRequestStatus',
+              'contributorRequestNote',
+              'role',
+              'updatedAt'
+            ]) &&
+            (
+              (isBootstrappedAdmin() && incoming().role == 'admin' && incoming().contributorRequestStatus == 'approved') ||
+              (
+                incoming().role == existing().role &&
+                (
+                  incoming().contributorRequestStatus == existing().contributorRequestStatus ||
+                  (existing().role == 'reader' && incoming().contributorRequestStatus == 'pending')
+                )
+              )
+            )
+          ) ||
+          (
+            isAdmin() &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'role',
+              'contributorRequestStatus',
+              'updatedAt'
+            ]) &&
+            !(existing().email == 'dieder.timmerman@gmail.com' && incoming().role != 'admin')
+          )
+        );
+    }
+
+    match /chapters/{chapterId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() &&
+        isValidId(chapterId) &&
+        chapterId.size() <= 60 &&
+        isValidChapter(incoming()) &&
+        incoming().parentChapterId != chapterId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin() &&
+        (incoming().parentChapterId == '' || exists(/databases/$(database)/documents/chapters/$(incoming().parentChapterId)));
+      allow update: if isSignedIn() &&
+        isValidId(chapterId) &&
+        isValidChapter(incoming()) &&
+        incoming().parentChapterId != chapterId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'romanIndex',
+          'title',
+          'seasonNote',
+          'epigraph',
+          'parentChapterId',
+          'sortOrder',
+          'updatedAt'
+        ]) &&
+        isAdmin() &&
+        (incoming().parentChapterId == '' || exists(/databases/$(database)/documents/chapters/$(incoming().parentChapterId)));
+      allow delete: if isAdmin() && isValidId(chapterId);
+    }
+
+    match /recipes/{recipeId} {
+      allow get: if isValidId(recipeId) && (
+        (('status' in existing()) && existing().status == 'published') ||
+        (isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin()))
+      );
+      allow list: if resource.data.status == 'published' ||
+        (isSignedIn() && resource.data.ownerId == request.auth.uid) ||
+        isBootstrappedAdmin();
+      allow create: if isContributorOrAdmin() &&
         isValidId(recipeId) &&
         isValidRecipe(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
         incoming().createdAt == request.time &&
         incoming().updatedAt == request.time;
-      allow update: if isVerifiedUser() &&
+      allow update: if isContributorOrAdmin() &&
         isValidId(recipeId) &&
         isValidRecipe(incoming()) &&
-        existing().ownerId == request.auth.uid &&
+        (existing().ownerId == request.auth.uid || isAdmin()) &&
         incoming().ownerId == existing().ownerId &&
         incoming().createdAt == existing().createdAt &&
         incoming().updatedAt == request.time &&
@@ -176,10 +387,15 @@ service cloud.firestore {
           'techniques',
           'steps',
           'sourceType',
+          'status',
           'customizationNote',
           'updatedAt'
         ]);
-      allow delete: if isVerifiedUser() && isValidId(recipeId) && existing().ownerId == request.auth.uid;
+      allow delete: if isContributorOrAdmin() &&
+        isValidId(recipeId) &&
+        (existing().ownerId == request.auth.uid || isAdmin()) &&
+        ('status' in existing()) &&
+        existing().status == 'draft';
     }
 
     match /bookmarks/{bookmarkId} {
@@ -205,6 +421,32 @@ service cloud.firestore {
           'updatedAt'
         ]);
       allow delete: if isVerifiedUser() && isValidId(bookmarkId) && existing().ownerId == request.auth.uid;
+    }
+
+    match /recipeRatings/{ratingId} {
+      allow get, list: if true;
+      allow create: if isVerifiedUser() &&
+        isValidId(ratingId) &&
+        isValidRating(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(ratingId) &&
+        isValidRating(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().recipeId == existing().recipeId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'authorName',
+          'rating',
+          'note',
+          'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() &&
+        isValidId(ratingId) &&
+        (existing().ownerId == request.auth.uid || isAdmin());
     }
   }
 }

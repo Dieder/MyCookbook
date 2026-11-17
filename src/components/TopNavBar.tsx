@@ -7,6 +7,8 @@ interface TopNavBarProps {
   savedCount: number;
   runningTimerCount: number;
   onOpenCookMode: () => void;
+  canContribute: boolean;
+  isAdmin: boolean;
   lang: LanguageCode;
 }
 
@@ -16,6 +18,8 @@ export function TopNavBar({
   savedCount,
   runningTimerCount,
   onOpenCookMode,
+  canContribute,
+  isAdmin,
   lang,
 }: TopNavBarProps) {
   const t = UI_STRINGS[lang];
@@ -24,6 +28,9 @@ export function TopNavBar({
     { id: 'chapters', label: t.navChapters },
     { id: 'cards', label: t.navCards },
     { id: 'saved', label: savedCount > 0 ? `${t.navSaved} (${savedCount})` : t.navSaved },
+    ...(canContribute ? [{ id: 'my-recipes' as BookView, label: t.navMyRecipes }] : []),
+    { id: 'settings', label: t.navSettings },
+    ...(isAdmin ? [{ id: 'admin' as BookView, label: t.navAdmin }] : []),
   ];
 
   return (
@@ -37,10 +44,13 @@ export function TopNavBar({
           Maison Feuille
         </button>
 
-        <nav className="hidden md:flex items-center gap-7 text-sm font-serif">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-serif">
           {navItems.map((item) => {
             const isActive =
-              activeView === item.id || (activeView === 'spread' && item.id === 'chapters');
+              activeView === item.id ||
+              (activeView === 'spread' && item.id === 'chapters') ||
+              (activeView === 'recipe-editor' && item.id === 'my-recipes') ||
+              (activeView === 'chapter-editor' && item.id === 'admin');
             return (
               <button
                 key={item.id}
@@ -70,10 +80,13 @@ export function TopNavBar({
       </div>
 
       {/* Compact mobile navigation row keeping strict <= 15% mobile height budget */}
-      <nav className="md:hidden border-t border-[var(--border-subtle)] px-4 py-2 flex items-center justify-between gap-3 overflow-x-auto text-xs font-serif">
+      <nav className="md:hidden border-t border-[var(--border-subtle)] px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto text-xs font-serif">
         {navItems.map((item) => {
           const isActive =
-            activeView === item.id || (activeView === 'spread' && item.id === 'chapters');
+            activeView === item.id ||
+            (activeView === 'spread' && item.id === 'chapters') ||
+            (activeView === 'recipe-editor' && item.id === 'my-recipes') ||
+            (activeView === 'chapter-editor' && item.id === 'admin');
           return (
             <button
               key={item.id}

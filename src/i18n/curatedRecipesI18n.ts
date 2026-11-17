@@ -1,4 +1,5 @@
 import { LanguageCode, Recipe } from '../types/cookbook';
+import { localizeExpandedRecipe } from './expandedRecipesI18n';
 
 interface RecipeTextPatch {
   title: string;
@@ -1401,7 +1402,7 @@ export function localizeRecipe(recipe: Recipe, lang: LanguageCode): Recipe {
   }
 
   const patch = CURATED_PATCHES[lang]?.[recipe.id];
-  if (!patch) return recipe;
+  if (!patch) return localizeExpandedRecipe(recipe, lang);
 
   return {
     ...recipe,

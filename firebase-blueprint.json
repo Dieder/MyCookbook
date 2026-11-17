@@ -1,8 +1,116 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated reader, contributor, or admin account record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 180
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "role": {
+          "type": "string",
+          "enum": ["reader", "contributor", "admin"],
+          "maxLength": 24
+        },
+        "contributorRequestStatus": {
+          "type": "string",
+          "enum": ["none", "pending", "approved", "rejected"],
+          "maxLength": 24
+        },
+        "contributorRequestNote": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "displayName",
+        "photoURL",
+        "role",
+        "contributorRequestStatus",
+        "contributorRequestNote",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChapterRecord": {
+      "title": "ChapterRecord",
+      "description": "Cookbook chapter or subchapter managed by admins.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "seasonNote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "epigraph": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "parentChapterId": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 60,
+          "pattern": "^$|^[a-zA-Z0-9_\\-]+$"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title",
+        "seasonNote",
+        "epigraph",
+        "parentChapterId",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
     "RecipeRecord": {
       "title": "RecipeRecord",
-      "description": "A user-created or AI-customized bistro recipe stored in the user's cookbook.",
+      "description": "A contributor-created or AI-customized bistro recipe stored in the cookbook.",
       "type": "object",
       "properties": {
         "ownerId": {
@@ -14,8 +122,9 @@
         },
         "chapterId": {
           "type": "string",
-          "enum": ["hearth-harvest", "coastal-market", "orchard-patisserie"],
-          "maxLength": 40
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
         },
         "plateNumber": {
           "type": "string",
@@ -54,7 +163,7 @@
         "heroImage": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 300
+          "maxLength": 250000
         },
         "figureCaption": {
           "type": "string",
@@ -95,12 +204,17 @@
         },
         "steps": {
           "type": "array",
-          "description": "Up to 15 numbered preparation steps with timers."
+          "description": "Up to 15 numbered preparation steps with optional timers and optional YouTube videoUrl links."
         },
         "sourceType": {
           "type": "string",
-          "enum": ["ai-generated", "ai-customized"],
+          "enum": ["ai-generated", "ai-customized", "contributor"],
           "maxLength": 32
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "published"],
+          "maxLength": 16
         },
         "parentRecipeId": {
           "type": "string",
@@ -141,6 +255,7 @@
         "techniques",
         "steps",
         "sourceType",
+        "status",
         "createdAt",
         "updatedAt"
       ]
@@ -190,20 +305,86 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "RecipeRatingRecord": {
+      "title": "RecipeRatingRecord",
+      "description": "Reader star rating and optional single-line note for a recipe.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "recipeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "rating": {
+          "type": "integer"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 140
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "authorName",
+        "recipeId",
+        "rating",
+        "note",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Authenticated user profiles and RBAC roles (reader, contributor, admin)."
+    },
+    "/chapters/{chapterId}": {
+      "schema": {
+        "$ref": "#/entities/ChapterRecord"
+      },
+      "description": "Cookbook chapters managed via admin CRUD operations."
+    },
     "/recipes/{recipeId}": {
       "schema": {
         "$ref": "#/entities/RecipeRecord"
       },
-      "description": "User-created and AI-customized recipes scoped strictly to ownerId."
+      "description": "Recipes publicly readable when published, readable by owner/admin when unpublished (draft), authored/updated by contributors or admins, and deletable only when unpublished."
     },
     "/bookmarks/{bookmarkId}": {
       "schema": {
         "$ref": "#/entities/BookmarkRecord"
       },
       "description": "Per-user recipe bookmarks, person counts, and margin notes scoped strictly to ownerId."
+    },
+    "/recipeRatings/{ratingId}": {
+      "schema": {
+        "$ref": "#/entities/RecipeRatingRecord"
+      },
+      "description": "Recipe ratings and quoted one-liner notes submitted by signed-in users."
     }
   }
 }

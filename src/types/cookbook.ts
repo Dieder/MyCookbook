@@ -1,10 +1,46 @@
-export type BookView = 'cover' | 'chapters' | 'cards' | 'saved' | 'spread';
+export type BookView =
+  | 'cover'
+  | 'chapters'
+  | 'cards'
+  | 'saved'
+  | 'spread'
+  | 'my-recipes'
+  | 'recipe-editor'
+  | 'settings'
+  | 'admin'
+  | 'chapter-editor';
+
+export type RecipeStatus = 'draft' | 'published';
 
 export type UnitSystem = 'metric' | 'imperial';
 
 export type LanguageCode = 'en' | 'nl' | 'fr' | 'es' | 'de' | 'it';
 
-export type ThemeId = 'whitepaper' | 'modern' | 'colorful';
+export type ThemeId = 'classic' | 'whitepaper' | 'modern' | 'colorful';
+
+export type UserRole = 'reader' | 'contributor' | 'admin';
+
+export type ContributorRequestStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL: string;
+  role: UserRole;
+  contributorRequestStatus: ContributorRequestStatus;
+  contributorRequestNote: string;
+}
+
+export interface RecipeRating {
+  id: string;
+  ownerId: string;
+  authorName: string;
+  recipeId: string;
+  rating: number;
+  note: string;
+  updatedAtMs?: number;
+}
 
 export type TechniquePreset =
   | 'butter-basting'
@@ -16,10 +52,11 @@ export type TechniquePreset =
 
 export interface Chapter {
   id: string;
-  romanIndex: string;
   title: string;
   seasonNote: string;
   epigraph: string;
+  parentChapterId?: string;
+  sortOrder?: number;
 }
 
 export interface Ingredient {
@@ -48,6 +85,7 @@ export interface TechniqueClip {
   preset: TechniquePreset;
   keyframeImage: string;
   stages: TechniqueStage[];
+  videoUrl?: string;
 }
 
 export interface RecipeStep {
@@ -58,6 +96,7 @@ export interface RecipeStep {
   timerLabel?: string;
   tip?: string;
   techniqueClipId?: string;
+  videoUrl?: string;
 }
 
 export interface Recipe {
@@ -82,7 +121,8 @@ export interface Recipe {
   techniques: TechniqueClip[];
   steps: RecipeStep[];
   ownerId?: string;
-  sourceType?: 'curated' | 'ai-generated' | 'ai-customized';
+  sourceType?: 'curated' | 'ai-generated' | 'ai-customized' | 'contributor';
+  status?: RecipeStatus;
   parentRecipeId?: string;
   customizationNote?: string;
 }
