@@ -369,6 +369,28 @@ export interface UIStrings {
   invalidYouTubeUrlError: (stepNum: number) => string;
   youtubeClipHint: string;
   allCoursesLabel: string;
+
+  // Calendar & Meal Planning
+  navCalendar: string;
+  calendarEyebrow: string;
+  calendarTitle: string;
+  calendarSubtitle: string;
+  nextSevenDaysTitle: string;
+  monthViewTitle: string;
+  prevMonthBtn: string;
+  nextMonthBtn: string;
+  todayLabel: string;
+  todayBtn: string;
+  noMealsScheduledDay: string;
+  addToCalendarBtn: string;
+  addToCalendarDateLabel: string;
+  confirmAddToCalendarBtn: string;
+  removeFromCalendarAria: string;
+  calendarSignInPrompt: string;
+  calendarAddedToast: string;
+  calendarRemovedToast: string;
+  quickAddRecipeBtn: string;
+  chooseRecipePlaceholder: string;
 }
 
 export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
@@ -699,6 +721,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Step ${stepNum}: please enter a valid YouTube link or leave it blank.`,
     youtubeClipHint: 'YouTube Video',
     allCoursesLabel: 'All Courses',
+
+    navCalendar: 'Calendar',
+    calendarEyebrow: 'Kitchen Table Schedule',
+    calendarTitle: 'Meal Calendar',
+    calendarSubtitle: 'Plan upcoming dishes across the next seven days or browse the full monthly kitchen calendar.',
+    nextSevenDaysTitle: 'Next 7 Days',
+    monthViewTitle: 'Monthly Calendar',
+    prevMonthBtn: 'Previous Month',
+    nextMonthBtn: 'Next Month',
+    todayLabel: 'Today',
+    todayBtn: 'Today',
+    noMealsScheduledDay: 'No courses scheduled',
+    addToCalendarBtn: 'Add to Calendar',
+    addToCalendarDateLabel: 'Schedule Date',
+    confirmAddToCalendarBtn: 'Save Date',
+    removeFromCalendarAria: 'Remove from calendar',
+    calendarSignInPrompt: 'Sign in with Google to schedule recipes on your personal kitchen calendar.',
+    calendarAddedToast: 'Recipe added to your calendar.',
+    calendarRemovedToast: 'Removed from calendar.',
+    quickAddRecipeBtn: 'Add Course',
+    chooseRecipePlaceholder: 'Choose a recipe...',
   },
 
   nl: {
@@ -1028,6 +1071,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Stap ${stepNum}: vul een geldige YouTube-link in of laat dit veld leeg.`,
     youtubeClipHint: 'YouTube-video',
     allCoursesLabel: 'Alle recepten',
+
+    navCalendar: 'Kalender',
+    calendarEyebrow: 'Keukenplanning',
+    calendarTitle: 'Maaltijdkalender',
+    calendarSubtitle: 'Bekijk je gekozen gerechten voor de komende zeven dagen en plan vooruit in het maandoverzicht.',
+    nextSevenDaysTitle: 'Komende 7 dagen',
+    monthViewTitle: 'Maandoverzicht',
+    prevMonthBtn: 'Vorige maand',
+    nextMonthBtn: 'Volgende maand',
+    todayLabel: 'Vandaag',
+    todayBtn: 'Vandaag',
+    noMealsScheduledDay: 'Geen gangen gepland',
+    addToCalendarBtn: 'Op kalender zetten',
+    addToCalendarDateLabel: 'Kies datum',
+    confirmAddToCalendarBtn: 'Opslaan',
+    removeFromCalendarAria: 'Verwijderen van kalender',
+    calendarSignInPrompt: 'Log in met Google om recepten aan je persoonlijke keukenkalender toe te voegen.',
+    calendarAddedToast: 'Recept toegevoegd aan je kalender.',
+    calendarRemovedToast: 'Verwijderd van de kalender.',
+    quickAddRecipeBtn: 'Gerecht toevoegen',
+    chooseRecipePlaceholder: 'Kies een recept...',
   },
 
   fr: {
@@ -1357,6 +1421,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Étape ${stepNum} : saisissez un lien YouTube valide ou laissez le champ vide.`,
     youtubeClipHint: 'Vidéo YouTube',
     allCoursesLabel: 'Tous les Services',
+
+    navCalendar: 'Calendrier',
+    calendarEyebrow: 'Semainier de Cuisine',
+    calendarTitle: 'Calendrier des Repas',
+    calendarSubtitle: 'Consultez les plats choisis pour les sept prochains jours et parcourez le calendrier mensuel.',
+    nextSevenDaysTitle: '7 Prochains Jours',
+    monthViewTitle: 'Vue Mensuelle',
+    prevMonthBtn: 'Mois précédent',
+    nextMonthBtn: 'Mois suivant',
+    todayLabel: 'Aujourd’hui',
+    todayBtn: 'Aujourd’hui',
+    noMealsScheduledDay: 'Aucun plat planifié',
+    addToCalendarBtn: 'Ajouter au calendrier',
+    addToCalendarDateLabel: 'Date prévue',
+    confirmAddToCalendarBtn: 'Enregistrer',
+    removeFromCalendarAria: 'Retirer du calendrier',
+    calendarSignInPrompt: 'Connectez-vous avec Google pour planifier des recettes dans votre calendrier.',
+    calendarAddedToast: 'Recette ajoutée au calendrier.',
+    calendarRemovedToast: 'Retiré du calendrier.',
+    quickAddRecipeBtn: 'Ajouter un plat',
+    chooseRecipePlaceholder: 'Choisir une recette...',
   },
 
   es: {
@@ -1686,6 +1771,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Paso ${stepNum}: introduce un enlace válido de YouTube o déjalo vacío.`,
     youtubeClipHint: 'Vídeo de YouTube',
     allCoursesLabel: 'Todos los Platos',
+
+    navCalendar: 'Calendario',
+    calendarEyebrow: 'Agenda de Cocina',
+    calendarTitle: 'Calendario de Comidas',
+    calendarSubtitle: 'Consulta los platos elegidos para los próximos siete días y navega por el calendario mensual.',
+    nextSevenDaysTitle: 'Próximos 7 Días',
+    monthViewTitle: 'Vista Mensual',
+    prevMonthBtn: 'Mes anterior',
+    nextMonthBtn: 'Mes siguiente',
+    todayLabel: 'Hoy',
+    todayBtn: 'Hoy',
+    noMealsScheduledDay: 'Sin platos programados',
+    addToCalendarBtn: 'Añadir al calendario',
+    addToCalendarDateLabel: 'Fecha',
+    confirmAddToCalendarBtn: 'Guardar',
+    removeFromCalendarAria: 'Quitar del calendario',
+    calendarSignInPrompt: 'Inicia sesión con Google para programar recetas en tu calendario personal.',
+    calendarAddedToast: 'Receta añadida al calendario.',
+    calendarRemovedToast: 'Eliminada del calendario.',
+    quickAddRecipeBtn: 'Añadir plato',
+    chooseRecipePlaceholder: 'Elige una receta...',
   },
 
   de: {
@@ -2015,6 +2121,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Schritt ${stepNum}: Bitte einen gültigen YouTube-Link eingeben oder leer lassen.`,
     youtubeClipHint: 'YouTube-Video',
     allCoursesLabel: 'Alle Gänge',
+
+    navCalendar: 'Kalender',
+    calendarEyebrow: 'Küchenplaner',
+    calendarTitle: 'Essenskalender',
+    calendarSubtitle: 'Sieh deine geplanten Gerichte für die nächsten sieben Tage und blättere durch die Monatsansicht.',
+    nextSevenDaysTitle: 'Nächste 7 Tage',
+    monthViewTitle: 'Monatsansicht',
+    prevMonthBtn: 'Vorheriger Monat',
+    nextMonthBtn: 'Nächster Monat',
+    todayLabel: 'Heute',
+    todayBtn: 'Heute',
+    noMealsScheduledDay: 'Keine Gänge geplant',
+    addToCalendarBtn: 'Zum Kalender',
+    addToCalendarDateLabel: 'Datum wählen',
+    confirmAddToCalendarBtn: 'Speichern',
+    removeFromCalendarAria: 'Aus Kalender entfernen',
+    calendarSignInPrompt: 'Melde dich mit Google an, um Rezepte in deinem persönlichen Küchenkalender zu planen.',
+    calendarAddedToast: 'Rezept zum Kalender hinzugefügt.',
+    calendarRemovedToast: 'Aus dem Kalender entfernt.',
+    quickAddRecipeBtn: 'Gericht hinzufügen',
+    chooseRecipePlaceholder: 'Rezept wählen...',
   },
 
   it: {
@@ -2344,6 +2471,27 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
       `Passaggio ${stepNum}: inserisci un link YouTube valido o lascia vuoto.`,
     youtubeClipHint: 'Video YouTube',
     allCoursesLabel: 'Tutte le Portate',
+
+    navCalendar: 'Calendario',
+    calendarEyebrow: 'Agenda di Cucina',
+    calendarTitle: 'Calendario dei Pasti',
+    calendarSubtitle: 'Visualizza i piatti scelti per i prossimi sette giorni e sfoglia il calendario mensile.',
+    nextSevenDaysTitle: 'Prossimi 7 Giorni',
+    monthViewTitle: 'Vista Mensile',
+    prevMonthBtn: 'Mese precedente',
+    nextMonthBtn: 'Mese successivo',
+    todayLabel: 'Oggi',
+    todayBtn: 'Oggi',
+    noMealsScheduledDay: 'Nessuna portata programmata',
+    addToCalendarBtn: 'Aggiungi al calendario',
+    addToCalendarDateLabel: 'Scegli data',
+    confirmAddToCalendarBtn: 'Salva',
+    removeFromCalendarAria: 'Rimuovi dal calendario',
+    calendarSignInPrompt: 'Accedi con Google per programmare le ricette nel tuo calendario personale.',
+    calendarAddedToast: 'Ricetta aggiunta al calendario.',
+    calendarRemovedToast: 'Rimossa dal calendario.',
+    quickAddRecipeBtn: 'Aggiungi piatto',
+    chooseRecipePlaceholder: 'Scegli una ricetta...',
   },
 };
 

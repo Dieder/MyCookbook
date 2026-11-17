@@ -67,6 +67,14 @@ export function BookCoverFrontispiece({
           className="text-left flex-1 cursor-pointer min-w-0"
         >
           <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+            {recipe.status === 'draft' && (
+              <>
+                <span className="text-[var(--accent-secondary)] uppercase tracking-wider font-medium">
+                  {t.statusDraft}
+                </span>
+                <span aria-hidden="true">·</span>
+              </>
+            )}
             <span>{t.plateLabel(recipe.plateNumber)}</span>
             <span aria-hidden="true">·</span>
             <span>

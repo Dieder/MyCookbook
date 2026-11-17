@@ -896,38 +896,33 @@ export function RecipeEditorPage({
           </div>
         </section>
 
-        {/* Ingredients List — shows only active unit preference & auto-converts */}
+        {/* Ingredients List — compact single-line rows, active unit preference & bottom Add */}
         <section className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 sm:p-8 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3">
-            <div className="space-y-0.5">
-              <h2 className="font-display text-2xl text-[var(--text-ink)]">
-                {t.recipeIngredientsSection}
-              </h2>
-              <p className="text-xs font-mono text-[var(--text-muted)]">
-                {unitSystem === 'metric' ? t.metricFull : t.usCustomaryFull}
-                {' · '}
-                {t.autoConvertNote(
-                  unitSystem === 'metric' ? t.usShort : t.metricShort
-                )}
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={ingredients.length >= 30}
-              onClick={() =>
-                setIngredients((prev) => [
-                  ...prev,
-                  makeEmptyIngredient(prev.length + 1),
-                ])
-              }
-              className="px-3 py-1.5 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer disabled:opacity-40 whitespace-nowrap shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {t.addIngredientBtn}
-            </button>
+          <div className="border-b border-[var(--border-subtle)] pb-3 space-y-0.5">
+            <h2 className="font-display text-2xl text-[var(--text-ink)]">
+              {t.recipeIngredientsSection}
+            </h2>
+            <p className="text-xs font-mono text-[var(--text-muted)]">
+              {unitSystem === 'metric' ? t.metricFull : t.usCustomaryFull}
+              {' · '}
+              {t.autoConvertNote(
+                unitSystem === 'metric' ? t.usShort : t.metricShort
+              )}
+            </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="hidden sm:grid sm:grid-cols-12 gap-2 px-2.5 pb-1 text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
+              <span className="sm:col-span-6">{t.recipeIngredientsSection}</span>
+              <span className="sm:col-span-2">
+                {unitSystem === 'metric' ? t.metricAmountLabel : t.imperialAmountLabel}
+              </span>
+              <span className="sm:col-span-3">
+                {unitSystem === 'metric' ? t.metricUnitLabel : t.imperialUnitLabel}
+              </span>
+              <span className="sm:col-span-1" />
+            </div>
+
             {ingredients.map((row, idx) => {
               const isMetricMode = unitSystem === 'metric';
               const activeAmount = isMetricMode
@@ -982,15 +977,16 @@ export function RecipeEditorPage({
               return (
                 <div
                   key={row.id}
-                  className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end p-3 bg-[var(--bg-paper)] border border-[var(--border-subtle)]"
+                  className="grid grid-cols-12 gap-2 items-center px-2.5 py-1.5 bg-[var(--bg-paper)] border border-[var(--border-subtle)]"
                 >
-                  <div className="sm:col-span-6">
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                      {t.recipeIngredientsSection} #{idx + 1}
-                    </label>
+                  <div className="col-span-12 sm:col-span-6 flex items-center gap-2 min-w-0">
+                    <span className="text-[11px] font-mono tabular-nums text-[var(--text-muted)] w-5 shrink-0">
+                      {idx + 1}.
+                    </span>
                     <input
                       type="text"
                       required
+                      aria-label={`${t.recipeIngredientsSection} #${idx + 1}`}
                       value={row.name}
                       placeholder={t.ingredientNamePlaceholder}
                       onChange={(e) =>
@@ -1000,18 +996,16 @@ export function RecipeEditorPage({
                           )
                         )
                       }
-                      className="w-full px-3 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-line)] text-sm font-serif text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
+                      className="w-full min-w-0 px-2.5 py-1 bg-[var(--bg-surface)] border border-[var(--border-line)] text-sm font-serif text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                      {isMetricMode ? t.metricAmountLabel : t.imperialAmountLabel}
-                    </label>
+                  <div className="col-span-4 sm:col-span-2">
                     <input
                       type="number"
                       step="any"
                       min="0.1"
+                      aria-label={isMetricMode ? t.metricAmountLabel : t.imperialAmountLabel}
                       value={activeAmount}
                       onChange={(e) =>
                         updateRowWithAutoConversion(
@@ -1019,20 +1013,18 @@ export function RecipeEditorPage({
                           activeUnit
                         )
                       }
-                      className="w-full px-2.5 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-line)] text-xs font-mono tabular-nums text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
+                      className="w-full px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-line)] text-xs font-mono tabular-nums text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
                     />
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                      {isMetricMode ? t.metricUnitLabel : t.imperialUnitLabel}
-                    </label>
+                  <div className="col-span-6 sm:col-span-3">
                     <select
+                      aria-label={isMetricMode ? t.metricUnitLabel : t.imperialUnitLabel}
                       value={activeUnit}
                       onChange={(e) =>
                         updateRowWithAutoConversion(activeAmount, e.target.value)
                       }
-                      className="w-full px-2.5 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-line)] text-xs font-mono text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
+                      className="w-full px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-line)] text-xs font-mono text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
                     >
                       {unitOptions.map((unitOpt) => (
                         <option key={unitOpt} value={unitOpt}>
@@ -1042,7 +1034,7 @@ export function RecipeEditorPage({
                     </select>
                   </div>
 
-                  <div className="sm:col-span-1 flex justify-end">
+                  <div className="col-span-2 sm:col-span-1 flex justify-end">
                     <button
                       type="button"
                       disabled={ingredients.length <= 1}
@@ -1052,7 +1044,8 @@ export function RecipeEditorPage({
                         )
                       }
                       aria-label={t.deleteBtn}
-                      className="p-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--accent-secondary)] disabled:opacity-35 cursor-pointer"
+                      title={t.deleteBtn}
+                      className="p-1.5 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--accent-secondary)] disabled:opacity-35 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1061,23 +1054,31 @@ export function RecipeEditorPage({
               );
             })}
           </div>
+
+          <div className="pt-1 flex justify-start">
+            <button
+              type="button"
+              disabled={ingredients.length >= 30}
+              onClick={() =>
+                setIngredients((prev) => [
+                  ...prev,
+                  makeEmptyIngredient(prev.length + 1),
+                ])
+              }
+              className="px-3.5 py-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer disabled:opacity-40 whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {t.addIngredientBtn}
+            </button>
+          </div>
         </section>
 
         {/* Preparation Steps */}
         <section className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 sm:p-8 space-y-4">
-          <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3">
+          <div className="border-b border-[var(--border-subtle)] pb-3">
             <h2 className="font-display text-2xl text-[var(--text-ink)]">
               {t.recipeStepsSection}
             </h2>
-            <button
-              type="button"
-              disabled={steps.length >= 15}
-              onClick={() => setSteps((prev) => [...prev, makeEmptyStep()])}
-              className="px-3 py-1.5 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer disabled:opacity-40 whitespace-nowrap shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {t.addStepBtn}
-            </button>
           </div>
 
           <div className="space-y-4">
@@ -1232,6 +1233,18 @@ export function RecipeEditorPage({
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="pt-1 flex justify-start">
+            <button
+              type="button"
+              disabled={steps.length >= 15}
+              onClick={() => setSteps((prev) => [...prev, makeEmptyStep()])}
+              className="px-3.5 py-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer disabled:opacity-40 whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {t.addStepBtn}
+            </button>
           </div>
         </section>
 

@@ -85,7 +85,9 @@ export function RecipeCardsIndex({
         const q = query.toLowerCase();
         return (
           r.title.toLowerCase().includes(q) ||
+          r.subtitle.toLowerCase().includes(q) ||
           r.region.toLowerCase().includes(q) ||
+          r.chefAuthor.toLowerCase().includes(q) ||
           r.ingredients.some((ing) => ing.name.toLowerCase().includes(q))
         );
       }
@@ -233,6 +235,11 @@ export function RecipeCardsIndex({
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-mono text-[var(--accent-secondary)]">
+                        {recipe.status === 'draft' && (
+                          <span className="uppercase tracking-wider font-medium mr-1.5">
+                            {t.statusDraft} ·
+                          </span>
+                        )}
                         {t.plateLabel(recipe.plateNumber)} · {recipe.region}
                       </p>
                       <h2

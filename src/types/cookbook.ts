@@ -3,6 +3,7 @@ export type BookView =
   | 'chapters'
   | 'cards'
   | 'saved'
+  | 'calendar'
   | 'spread'
   | 'my-recipes'
   | 'recipe-editor'
@@ -39,6 +40,16 @@ export interface RecipeRating {
   recipeId: string;
   rating: number;
   note: string;
+  updatedAtMs?: number;
+}
+
+export interface MealCalendarEntry {
+  id: string;
+  ownerId: string;
+  date: string; // Local 'YYYY-MM-DD'
+  recipeId: string;
+  recipeTitle: string;
+  courseId: string;
   updatedAtMs?: number;
 }
 

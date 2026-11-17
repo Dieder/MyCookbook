@@ -4,6 +4,7 @@ import { AdminPage } from './components/AdminPage';
 import { AskRecipeModal } from './components/AskRecipeModal';
 import { BookCoverFrontispiece } from './components/BookCoverFrontispiece';
 import { BookSpreadView } from './components/BookSpreadView';
+import { CalendarPage } from './components/CalendarPage';
 import { ChapterEditorPage } from './components/ChapterEditorPage';
 import { ChaptersGallery } from './components/ChaptersGallery';
 import { CookModeOverlay } from './components/CookModeOverlay';
@@ -25,6 +26,12 @@ import {
   getLocalizedChapters,
 } from './i18n/translations';
 import { auth, googleProvider } from './lib/firebase';
+import {
+  deleteCalendarEntryFromFirestore,
+  formatCalendarDocId,
+  subscribeUserCalendar,
+  upsertCalendarEntryInFirestore,
+} from './lib/firestoreCalendar';
 import {
   adminUpdateUserRole,
   createChapterInFirestore,
@@ -59,6 +66,7 @@ import {
   Chapter,
   ContributorRequestStatus,
   LanguageCode,
+  MealCalendarEntry,
   Recipe,
   RecipeStatus,
   RecipeRating,
@@ -152,6 +160,7 @@ export default function App() {
   const [publishedCloudRecipes, setPublishedCloudRecipes] = useState<Recipe[]>([]);
   const [cloudRecipes, setCloudRecipes] = useState<Recipe[]>([]);
   const [cloudBookmarks, setCloudBookmarks] = useState<BookmarkDoc[]>([]);
+  const [calendarEntries, setCalendarEntries] = useState<MealCalendarEntry[]>([]);
   const [activeRecipeRatings, setActiveRecipeRatings] = useState<RecipeRating[]>([]);
   const [localDraftRecipes, setLocalDraftRecipes] = useState<Recipe[]>(() =>
     readStorage<Recipe[]>(STORAGE_KEYS.localRecipes, [])
@@ -299,11 +308,12 @@ export default function App() {
     });
   }, [isAdmin, cloudChapters]);
 
-  // Subscribe to signed-in user's profile, recipes, and bookmarks
+  // Subscribe to signed-in user's profile, recipes, bookmarks, and meal calendar
   useEffect(() => {
     if (!authReady || !user) {
       setCloudRecipes([]);
       setCloudBookmarks([]);
+      setCalendarEntries([]);
       return;
     }
 
@@ -345,10 +355,17 @@ export default function App() {
       (err) => console.error('Cloud bookmarks sync error:', err)
     );
 
+    const unsubCalendar = subscribeUserCalendar(
+      user.uid,
+      (items) => setCalendarEntries(items),
+      (err) => console.error('Calendar sync error:', err)
+    );
+
     return () => {
       unsubProfile();
       unsubRecipes();
       unsubBookmarks();
+      unsubCalendar();
     };
   }, [authReady, user]);
 
@@ -502,14 +519,19 @@ export default function App() {
     });
   }, [cloudChapters, language]);
 
-  // Merge curated plates (localized to active language) with published Firestore & published local recipes
+  // Merge curated plates (localized to active language) with published community recipes
+  // plus the signed-in user's own recipes (including unpublished drafts, never visible to others)
   const allRecipes = useMemo(() => {
-    const publishedLocal = localDraftRecipes.filter((r) => r.status !== 'draft');
     const customPoolMap = new Map<string, Recipe>();
     for (const r of publishedCloudRecipes) {
       customPoolMap.set(r.id, r);
     }
-    for (const r of publishedLocal) {
+    if (user) {
+      for (const r of cloudRecipes) {
+        customPoolMap.set(r.id, r);
+      }
+    }
+    for (const r of localDraftRecipes) {
       if (!customPoolMap.has(r.id)) {
         customPoolMap.set(r.id, r);
       }
@@ -543,7 +565,7 @@ export default function App() {
     }));
 
     return [...baseMerged, ...extras];
-  }, [publishedCloudRecipes, localDraftRecipes, language]);
+  }, [publishedCloudRecipes, cloudRecipes, user, localDraftRecipes, language]);
 
   const myManagedRecipes = useMemo(() => {
     if (!user) return localDraftRecipes;
@@ -594,11 +616,15 @@ export default function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      if (activeRecipe?.status === 'draft') {
+        setActiveRecipeId(CURATED_RECIPES[0].id);
+      }
       if (
         activeView === 'admin' ||
         activeView === 'chapter-editor' ||
         activeView === 'my-recipes' ||
-        activeView === 'recipe-editor'
+        activeView === 'recipe-editor' ||
+        (activeView === 'spread' && activeRecipe?.status === 'draft')
       ) {
         setEditingChapter(null);
         setEditingRecipe(null);
@@ -800,6 +826,29 @@ export default function App() {
   const handleDeleteRecipeRating = async (ratingId: string) => {
     await deleteRecipeRating(ratingId);
     showToast(t.ratingDeletedToast);
+  };
+
+  const handleAddRecipeToCalendar = async (recipe: Recipe, dateKey: string) => {
+    if (!user) return;
+    const safeRecipeId = sanitizeDocId(recipe.id);
+    const docId = formatCalendarDocId(user.uid, dateKey, safeRecipeId);
+    const existsInCloud = calendarEntries.some((entry) => entry.id === docId);
+    await upsertCalendarEntryInFirestore(
+      user.uid,
+      {
+        date: dateKey,
+        recipeId: safeRecipeId,
+        recipeTitle: recipe.title,
+        courseId: recipe.chapterId,
+      },
+      existsInCloud
+    );
+    showToast(t.calendarAddedToast);
+  };
+
+  const handleRemoveCalendarEntry = async (entryId: string) => {
+    await deleteCalendarEntryFromFirestore(entryId);
+    showToast(t.calendarRemovedToast);
   };
 
   const handleCreateRecipe = async (
@@ -1160,6 +1209,29 @@ export default function App() {
             currentUserUid={user?.uid ?? null}
             onSaveRating={handleSaveRecipeRating}
             onDeleteRating={handleDeleteRecipeRating}
+            onAddToCalendar={(dateKey) =>
+              handleAddRecipeToCalendar(activeRecipe, dateKey)
+            }
+            scheduledEntries={calendarEntries.filter(
+              (entry) => entry.recipeId === sanitizeDocId(activeRecipe.id)
+            )}
+            onRemoveCalendarEntry={handleRemoveCalendarEntry}
+            onOpenCalendar={() => navigateView('calendar')}
+            onGoToSettings={() => navigateView('settings')}
+            lang={language}
+          />
+        )}
+
+        {activeView === 'calendar' && (
+          <CalendarPage
+            isSignedIn={Boolean(user)}
+            entries={calendarEntries}
+            recipes={allRecipes}
+            chapters={activeChapters}
+            onSelectRecipe={openRecipeSpread}
+            onSelectChapter={openChaptersAt}
+            onRemoveEntry={handleRemoveCalendarEntry}
+            onSignIn={() => void handleSignIn()}
             onGoToSettings={() => navigateView('settings')}
             lang={language}
           />
@@ -1303,6 +1375,13 @@ export default function App() {
               className="hover:text-[var(--text-ink)] cursor-pointer"
             >
               {t.navCards}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateView('calendar')}
+              className="hover:text-[var(--text-ink)] cursor-pointer"
+            >
+              {t.navCalendar}
             </button>
             <button
               type="button"

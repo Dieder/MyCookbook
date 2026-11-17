@@ -105,6 +105,8 @@ export function ChaptersGallery({
           recipe.title.toLowerCase().includes(q) ||
           recipe.subtitle.toLowerCase().includes(q) ||
           recipe.region.toLowerCase().includes(q) ||
+          recipe.storyExcerpt.toLowerCase().includes(q) ||
+          recipe.chefAuthor.toLowerCase().includes(q) ||
           recipe.ingredients.some((ing) => ing.name.toLowerCase().includes(q))
         );
       }
@@ -291,6 +293,14 @@ export function ChaptersGallery({
 
                 <div className="mt-5 flex items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+                    {recipe.status === 'draft' && (
+                      <>
+                        <span className="text-[var(--accent-secondary)] uppercase tracking-wider font-medium">
+                          {t.statusDraft}
+                        </span>
+                        <span aria-hidden="true">·</span>
+                      </>
+                    )}
                     <span className="text-[var(--accent-secondary)]">
                       {t.plateLabel(recipe.plateNumber)}
                     </span>

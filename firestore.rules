@@ -256,6 +256,37 @@ service cloud.firestore {
         data.updatedAt is timestamp;
     }
 
+    function isValidCalendarEntry(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'date',
+          'recipeId',
+          'recipeTitle',
+          'courseId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'date',
+          'recipeId',
+          'recipeTitle',
+          'courseId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.date is string && data.date.size() == 10 &&
+        data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        isValidId(data.recipeId) &&
+        data.recipeTitle is string && data.recipeTitle.size() >= 1 && data.recipeTitle.size() <= 140 &&
+        data.courseId is string && data.courseId.size() >= 1 && data.courseId.size() <= 60 &&
+        data.courseId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn() && isValidId(userId) && (userId == request.auth.uid || isAdmin());
       allow list: if isBootstrappedAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
@@ -447,6 +478,31 @@ service cloud.firestore {
       allow delete: if isVerifiedUser() &&
         isValidId(ratingId) &&
         (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    match /mealCalendar/{entryId} {
+      allow get: if isSignedIn() && isValidId(entryId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(entryId) &&
+        isValidCalendarEntry(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(entryId) &&
+        isValidCalendarEntry(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().date == existing().date &&
+        incoming().recipeId == existing().recipeId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'recipeTitle',
+          'courseId',
+          'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(entryId) && existing().ownerId == request.auth.uid;
     }
   }
 }

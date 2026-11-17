@@ -1,8 +1,8 @@
 import { RECIPES as CURATED_RECIPES } from '../data/cookbookData';
 import { LanguageCode } from '../types/cookbook';
 
-const BASE_METRIC_UNITS = ['g', 'kg', 'ml', 'l', 'tbsp', 'tsp'];
-const BASE_IMPERIAL_UNITS = ['oz', 'lb', 'cup', 'cups', 'tbsp', 'tsp', 'fl oz'];
+const BASE_METRIC_UNITS = ['g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'piece'];
+const BASE_IMPERIAL_UNITS = ['oz', 'lb', 'cup', 'cups', 'tbsp', 'tsp', 'fl oz', 'piece'];
 
 function buildUnitLists(): { metricUnits: string[]; imperialUnits: string[] } {
   const metricSet = new Set<string>(BASE_METRIC_UNITS);
@@ -43,9 +43,10 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb (pounds)',
     cup: 'cup',
     cups: 'cups',
-    tbsp: 'tbsp',
-    tsp: 'tsp',
+    tbsp: 'tablespoon',
+    tsp: 'teaspoon',
     'fl oz': 'fl oz',
+    piece: 'piece',
     whole: 'whole',
     cloves: 'cloves',
     leaves: 'leaves',
@@ -71,9 +72,10 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb',
     cup: 'kop',
     cups: 'koppen',
-    tbsp: 'el (eetlepel)',
-    tsp: 'tl (theelepel)',
+    tbsp: 'eetlepel',
+    tsp: 'theelepel',
     'fl oz': 'fl oz',
+    piece: 'stuk',
     whole: 'stuks',
     cloves: 'tenen',
     leaves: 'blaadjes',
@@ -99,9 +101,10 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb',
     cup: 'tasse',
     cups: 'tasses',
-    tbsp: 'c. à s.',
-    tsp: 'c. à c.',
+    tbsp: 'cuillère à soupe',
+    tsp: 'cuillère à café',
     'fl oz': 'fl oz',
+    piece: 'pièce',
     whole: 'pièces',
     cloves: 'gousses',
     leaves: 'feuilles',
@@ -127,9 +130,10 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb',
     cup: 'taza',
     cups: 'tazas',
-    tbsp: 'cda',
-    tsp: 'cdta',
+    tbsp: 'cucharada',
+    tsp: 'cucharadita',
     'fl oz': 'fl oz',
+    piece: 'pieza',
     whole: 'piezas',
     cloves: 'dientes',
     leaves: 'hojas',
@@ -155,10 +159,11 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb',
     cup: 'Tasse',
     cups: 'Tassen',
-    tbsp: 'EL',
-    tsp: 'TL',
+    tbsp: 'Esslöffel',
+    tsp: 'Teelöffel',
     'fl oz': 'fl oz',
-    whole: 'Stück',
+    piece: 'Stück',
+    whole: 'Stück (ganz)',
     cloves: 'Zehen',
     leaves: 'Blätter',
     sprigs: 'Zweige',
@@ -183,9 +188,10 @@ const UNIT_LABELS: Record<LanguageCode, Record<string, string>> = {
     lb: 'lb',
     cup: 'tazza',
     cups: 'tazze',
-    tbsp: 'cucch.',
-    tsp: 'cucch.ino',
+    tbsp: 'cucchiaio',
+    tsp: 'cucchiaino',
     'fl oz': 'fl oz',
+    piece: 'pezzo',
     whole: 'pezzi',
     cloves: 'spicchi',
     leaves: 'foglie',
@@ -285,6 +291,10 @@ export function convertImperialToMetric(
     }
     case 'tbsp': {
       const ml = Math.max(5, Math.round(safeQty * 15));
+      return { amount: ml, unit: 'ml' };
+    }
+    case 'tsp': {
+      const ml = Math.max(2, Math.round(safeQty * 5));
       return { amount: ml, unit: 'ml' };
     }
     default:

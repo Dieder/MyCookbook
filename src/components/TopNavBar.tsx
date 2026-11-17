@@ -1,3 +1,4 @@
+import { Settings, Shield } from 'lucide-react';
 import { UI_STRINGS } from '../i18n/translations';
 import { BookView, LanguageCode } from '../types/cookbook';
 
@@ -27,15 +28,17 @@ export function TopNavBar({
     { id: 'cover', label: t.navCover },
     { id: 'chapters', label: t.navChapters },
     { id: 'cards', label: t.navCards },
+    { id: 'calendar', label: t.navCalendar },
     { id: 'saved', label: savedCount > 0 ? `${t.navSaved} (${savedCount})` : t.navSaved },
     ...(canContribute ? [{ id: 'my-recipes' as BookView, label: t.navMyRecipes }] : []),
-    { id: 'settings', label: t.navSettings },
-    ...(isAdmin ? [{ id: 'admin' as BookView, label: t.navAdmin }] : []),
   ];
+
+  const isAdminActive = activeView === 'admin' || activeView === 'chapter-editor';
+  const isSettingsActive = activeView === 'settings';
 
   return (
     <header className="sticky top-0 z-30 bg-[var(--bg-paper)]/95 backdrop-blur-sm border-b border-[var(--border-line)]">
-      <div className="max-w-[1280px] mx-auto px-6 sm:px-10 h-16 flex items-center justify-between gap-8">
+      <div className="max-w-[1280px] mx-auto px-6 sm:px-10 h-16 flex items-center justify-between gap-4 sm:gap-8">
         <button
           type="button"
           onClick={() => onNavigate('cover')}
@@ -49,8 +52,7 @@ export function TopNavBar({
             const isActive =
               activeView === item.id ||
               (activeView === 'spread' && item.id === 'chapters') ||
-              (activeView === 'recipe-editor' && item.id === 'my-recipes') ||
-              (activeView === 'chapter-editor' && item.id === 'admin');
+              (activeView === 'recipe-editor' && item.id === 'my-recipes');
             return (
               <button
                 key={item.id}
@@ -68,11 +70,41 @@ export function TopNavBar({
           })}
         </nav>
 
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => onNavigate('admin')}
+              aria-label={t.navAdmin}
+              title={t.navAdmin}
+              className={`p-2 border transition-colors cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] ${
+                isAdminActive
+                  ? 'border-[var(--accent-primary)] bg-[var(--accent-soft)] text-[var(--accent-primary)]'
+                  : 'border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:border-[var(--accent-primary)]'
+              }`}
+            >
+              <Shield className="w-4 h-4" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onNavigate('settings')}
+            aria-label={t.navSettings}
+            title={t.navSettings}
+            className={`p-2 border transition-colors cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] ${
+              isSettingsActive
+                ? 'border-[var(--accent-primary)] bg-[var(--accent-soft)] text-[var(--accent-primary)]'
+                : 'border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:border-[var(--accent-primary)]'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
           <button
             type="button"
             onClick={onOpenCookMode}
-            className="px-4 py-2 text-xs font-mono tracking-wide bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
+            className="px-3.5 sm:px-4 py-2 text-xs font-mono tracking-wide bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
           >
             {runningTimerCount > 0 ? t.cookModeActive(runningTimerCount) : t.cookMode}
           </button>
@@ -85,8 +117,7 @@ export function TopNavBar({
           const isActive =
             activeView === item.id ||
             (activeView === 'spread' && item.id === 'chapters') ||
-            (activeView === 'recipe-editor' && item.id === 'my-recipes') ||
-            (activeView === 'chapter-editor' && item.id === 'admin');
+            (activeView === 'recipe-editor' && item.id === 'my-recipes');
           return (
             <button
               key={item.id}
