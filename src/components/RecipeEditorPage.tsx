@@ -36,7 +36,9 @@ import {
   isValidOptionalYouTubeUrl,
   normalizeOptionalYouTubeUrl,
 } from '../utils/youtube';
+import { splitStoryIntoParagraphs, stripStoryMarkup } from '../utils/storyMarkup';
 import { EditorialPlateImage } from './EditorialPlateImage';
+import { StoryWysiwygEditor } from './StoryWysiwygEditor';
 
 const PLATE_IMAGE_OPTIONS = [
   {
@@ -379,13 +381,9 @@ export function RecipeEditorPage({
       return;
     }
 
-    const paragraphs = storyText
-      .split(/\n\s*\n/)
-      .map((p) => p.trim().slice(0, 1500))
-      .filter(Boolean)
-      .slice(0, 4);
-
-    const safeExcerpt = (storyExcerpt.trim() || cleanSubtitle).slice(0, 500);
+    const paragraphs = splitStoryIntoParagraphs(storyText, 4, 1500);
+    const plainFallback = stripStoryMarkup(paragraphs[0] ?? '');
+    const safeExcerpt = (storyExcerpt.trim() || plainFallback || cleanSubtitle).slice(0, 500);
     if (paragraphs.length === 0) {
       paragraphs.push(safeExcerpt);
     }
@@ -850,12 +848,12 @@ export function RecipeEditorPage({
             >
               {t.recipeStoryField}
             </label>
-            <textarea
+            <StoryWysiwygEditor
               id="rec-story"
-              rows={4}
               value={storyText}
-              onChange={(e) => setStoryText(e.target.value)}
-              className="w-full p-3.5 bg-[var(--bg-paper)] border border-[var(--border-line)] text-sm font-serif text-[var(--text-ink)] leading-relaxed focus:outline-none focus:border-[var(--accent-primary)]"
+              onChange={setStoryText}
+              lang={lang}
+              maxParagraphs={4}
             />
           </div>
 

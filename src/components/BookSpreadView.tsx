@@ -45,6 +45,7 @@ import {
   getIntlLocale,
   getTodayDateKey,
 } from '../utils/calendar';
+import { StoryMarkupRenderer } from '../utils/storyMarkup';
 import { resolveRecipeClips, resolveStepClip } from '../utils/youtube';
 import { EditorialPlateImage } from './EditorialPlateImage';
 
@@ -640,16 +641,11 @@ export function BookSpreadView({
 
           <div className="space-y-5 pt-3 border-t border-[var(--border-subtle)]">
             {recipe.storyParagraphs.map((para, idx) => (
-              <p
+              <StoryMarkupRenderer
                 key={idx}
-                className={`font-serif text-[16px] leading-[1.82] text-[var(--text-ink)]/90 ${
-                  idx === 0
-                    ? 'first-letter:text-5xl first-letter:font-display first-letter:font-semibold first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:leading-[0.84] first-letter:text-[var(--accent-primary)]'
-                    : ''
-                }`}
-              >
-                {para}
-              </p>
+                text={para}
+                enableDropCap={idx === 0}
+              />
             ))}
           </div>
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Loader2, Wand2, X } from 'lucide-react';
 import { UI_STRINGS } from '../i18n/translations';
 import { LanguageCode, Recipe } from '../types/cookbook';
+import { parseApiJsonSafe, toHumanReadableAiError } from '../utils/aiError';
 
 interface CustomizeRecipeModalProps {
   recipe: Recipe | null;
@@ -40,15 +41,32 @@ export function CustomizeRecipeModal({
           language: lang,
         }),
       });
-      const data = await response.json();
-      if (!response.ok || !data.recipe) {
-        throw new Error(data.error || 'Could not customize this recipe right now.');
+      const parsed = await parseApiJsonSafe<{
+        recipe?: Omit<Recipe, 'id' | 'plateNumber'>;
+        error?: string;
+        errorCode?: string;
+      }>(response);
+
+      if (parsed.invalidJson || !parsed.ok || !parsed.data?.recipe) {
+        setError(
+          toHumanReadableAiError(
+            {
+              status: parsed.status,
+              invalidJson: parsed.invalidJson,
+              errorCode: parsed.data?.errorCode,
+              serverMessage: parsed.data?.error,
+            },
+            lang
+          )
+        );
+        return;
       }
-      await onCustomized(data.recipe);
+
+      await onCustomized(parsed.data.recipe);
       setInstruction('');
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unable to customize recipe.');
+      setError(toHumanReadableAiError({ err }, lang));
     } finally {
       setIsUpdating(false);
     }

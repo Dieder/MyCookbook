@@ -391,6 +391,28 @@ export interface UIStrings {
   calendarRemovedToast: string;
   quickAddRecipeBtn: string;
   chooseRecipePlaceholder: string;
+
+  // Story WYSIWYG Markup Editor
+  storyToolbarBold: string;
+  storyToolbarItalic: string;
+  storyToolbarUnderline: string;
+  storyToolbarHeading: string;
+  storyToolbarBullet: string;
+  storyToolbarQuote: string;
+  storyToolbarClear: string;
+  storyVisualMode: string;
+  storyMarkupMode: string;
+  storyMarkupHint: string;
+  storyParagraphsCount: (count: number, max: number) => string;
+
+  // Human-Readable AI Errors
+  aiErrUnavailable: string;
+  aiErrRateLimit: string;
+  aiErrInvalidResponse: string;
+  aiErrTimeout: string;
+  aiErrNetwork: string;
+  aiErrSaveFailed: string;
+  aiErrGeneric: string;
 }
 
 export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
@@ -742,6 +764,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Removed from calendar.',
     quickAddRecipeBtn: 'Add Course',
     chooseRecipePlaceholder: 'Choose a recipe...',
+
+    storyToolbarBold: 'Bold',
+    storyToolbarItalic: 'Italic',
+    storyToolbarUnderline: 'Underline',
+    storyToolbarHeading: 'Subheading',
+    storyToolbarBullet: 'Bullet list',
+    storyToolbarQuote: 'Kitchen quote',
+    storyToolbarClear: 'Clear formatting',
+    storyVisualMode: 'Visual',
+    storyMarkupMode: 'Markup',
+    storyMarkupHint: 'Supports **bold**, *italic*, __underline__, ### heading, > note, and - list.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} paragraphs`,
+
+    aiErrUnavailable: 'The culinary assistant is temporarily unavailable or busy. Please try again in a moment.',
+    aiErrRateLimit: 'Too many recipe requests right now. Please wait a brief moment before trying again.',
+    aiErrInvalidResponse: 'We received an unreadable technical response from the kitchen assistant. Please try again.',
+    aiErrTimeout: 'The recipe request took too long to complete. Please try again with a simpler prompt.',
+    aiErrNetwork: 'Unable to reach the recipe assistant right now. Please check your connection and try again.',
+    aiErrSaveFailed: 'Your recipe was composed, but saving it to your cookbook failed. Please check your permissions and try again.',
+    aiErrGeneric: 'Something went wrong while preparing your recipe. Please try again shortly.',
   },
 
   nl: {
@@ -1092,6 +1134,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Verwijderd van de kalender.',
     quickAddRecipeBtn: 'Gerecht toevoegen',
     chooseRecipePlaceholder: 'Kies een recept...',
+
+    storyToolbarBold: 'Vet',
+    storyToolbarItalic: 'Cursief',
+    storyToolbarUnderline: 'Onderstreept',
+    storyToolbarHeading: 'Tussenkop',
+    storyToolbarBullet: 'Opsomming',
+    storyToolbarQuote: 'Citaat',
+    storyToolbarClear: 'Opmaak wissen',
+    storyVisualMode: 'Visueel',
+    storyMarkupMode: 'Opmaakcode',
+    storyMarkupHint: 'Ondersteunt **vet**, *cursief*, __onderstreept__, ### kop, > notitie en - lijst.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} alinea’s`,
+
+    aiErrUnavailable: 'De keukenassistent is tijdelijk niet beschikbaar of erg druk. Probeer het over een ogenblik opnieuw.',
+    aiErrRateLimit: 'Er zijn momenteel te veel receptaanvragen achter elkaar gedaan. Wacht heel even en probeer opnieuw.',
+    aiErrInvalidResponse: 'Er kwam een ongeldig of onleesbaar antwoord terug van de assistent. Probeer het opnieuw.',
+    aiErrTimeout: 'Het samenstellen van het recept duurde te lang. Probeer het opnieuw met een kortere omschrijving.',
+    aiErrNetwork: 'Kan de keukenassistent momenteel niet bereiken. Controleer de verbinding en probeer opnieuw.',
+    aiErrSaveFailed: 'Het recept is opgesteld, maar opslaan in je kookboek is mislukt. Controleer je rechten en probeer opnieuw.',
+    aiErrGeneric: 'Er is een technisch probleem opgetreden bij het maken van dit recept. Probeer het zo meteen opnieuw.',
   },
 
   fr: {
@@ -1442,6 +1504,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Retiré du calendrier.',
     quickAddRecipeBtn: 'Ajouter un plat',
     chooseRecipePlaceholder: 'Choisir une recette...',
+
+    storyToolbarBold: 'Gras',
+    storyToolbarItalic: 'Italique',
+    storyToolbarUnderline: 'Souligné',
+    storyToolbarHeading: 'Sous-titre',
+    storyToolbarBullet: 'Liste à puces',
+    storyToolbarQuote: 'Citation',
+    storyToolbarClear: 'Effacer le style',
+    storyVisualMode: 'Visuel',
+    storyMarkupMode: 'Balisage',
+    storyMarkupHint: 'Prend en charge **gras**, *italique*, __souligné__, ### titre, > note et - liste.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} paragraphes`,
+
+    aiErrUnavailable: 'L’assistant culinaire est momentanément indisponible ou occupé. Veuillez réessayer dans un instant.',
+    aiErrRateLimit: 'Trop de demandes de recettes ont été envoyées. Patientez quelques secondes puis réessayez.',
+    aiErrInvalidResponse: 'L’assistant a renvoyé une réponse technique illisible. Veuillez réessayer.',
+    aiErrTimeout: 'La création de la recette a pris trop de temps. Réessayez avec une demande plus concise.',
+    aiErrNetwork: 'Impossible de joindre l’assistant culinaire pour le moment. Vérifiez votre connexion.',
+    aiErrSaveFailed: 'La recette a été préparée, mais son enregistrement a échoué. Vérifiez vos droits d’accès.',
+    aiErrGeneric: 'Une erreur technique est survenue lors de la préparation de cette recette. Veuillez réessayer.',
   },
 
   es: {
@@ -1792,6 +1874,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Eliminada del calendario.',
     quickAddRecipeBtn: 'Añadir plato',
     chooseRecipePlaceholder: 'Elige una receta...',
+
+    storyToolbarBold: 'Negrita',
+    storyToolbarItalic: 'Cursiva',
+    storyToolbarUnderline: 'Subrayado',
+    storyToolbarHeading: 'Subtítulo',
+    storyToolbarBullet: 'Lista con viñetas',
+    storyToolbarQuote: 'Cita',
+    storyToolbarClear: 'Borrar formato',
+    storyVisualMode: 'Visual',
+    storyMarkupMode: 'Marcado',
+    storyMarkupHint: 'Admite **negrita**, *cursiva*, __subrayado__, ### título, > nota y - lista.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} párrafos`,
+
+    aiErrUnavailable: 'El asistente culinario no está disponible temporalmente o está ocupado. Inténtalo de nuevo en un momento.',
+    aiErrRateLimit: 'Demasiadas solicitudes seguidas. Espera un momento antes de volver a intentarlo.',
+    aiErrInvalidResponse: 'Se recibió una respuesta técnica ilegible del asistente. Por favor, inténtalo de nuevo.',
+    aiErrTimeout: 'La receta tardó demasiado en generarse. Inténtalo con una descripción más breve.',
+    aiErrNetwork: 'No se pudo conectar con el asistente culinario en este momento. Revisa tu conexión.',
+    aiErrSaveFailed: 'La receta se generó, pero no se pudo guardar en tu recetario. Revisa tus permisos e inténtalo de nuevo.',
+    aiErrGeneric: 'Ocurrió un problema técnico al preparar la receta. Inténtalo de nuevo en unos instantes.',
   },
 
   de: {
@@ -2142,6 +2244,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Aus dem Kalender entfernt.',
     quickAddRecipeBtn: 'Gericht hinzufügen',
     chooseRecipePlaceholder: 'Rezept wählen...',
+
+    storyToolbarBold: 'Fett',
+    storyToolbarItalic: 'Kursiv',
+    storyToolbarUnderline: 'Unterstrichen',
+    storyToolbarHeading: 'Zwischenüberschrift',
+    storyToolbarBullet: 'Aufzählung',
+    storyToolbarQuote: 'Zitat',
+    storyToolbarClear: 'Formatierung löschen',
+    storyVisualMode: 'Visuell',
+    storyMarkupMode: 'Markup',
+    storyMarkupHint: 'Unterstützt **fett**, *kursiv*, __unterstrichen__, ### Überschrift, > Notiz und - Liste.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} Absätze`,
+
+    aiErrUnavailable: 'Der Küchenassistent ist vorübergehend nicht erreichbar oder ausgelastet. Bitte versuche es gleich noch einmal.',
+    aiErrRateLimit: 'Derzeit wurden zu viele Rezeptanfragen gestellt. Bitte warte kurz und versuche es erneut.',
+    aiErrInvalidResponse: 'Der Küchenassistent hat eine ungültige technische Antwort geliefert. Bitte versuche es erneut.',
+    aiErrTimeout: 'Die Rezepterstellung hat zu lange gedauert. Bitte versuche es mit einer kürzeren Anfrage erneut.',
+    aiErrNetwork: 'Der Küchenassistent ist derzeit nicht erreichbar. Bitte prüfe deine Verbindung.',
+    aiErrSaveFailed: 'Das Rezept wurde erstellt, konnte aber nicht gespeichert werden. Bitte prüfe deine Berechtigungen.',
+    aiErrGeneric: 'Beim Erstellen des Rezepts ist ein technischer Fehler aufgetreten. Bitte versuche es gleich noch einmal.',
   },
 
   it: {
@@ -2492,6 +2614,26 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     calendarRemovedToast: 'Rimossa dal calendario.',
     quickAddRecipeBtn: 'Aggiungi piatto',
     chooseRecipePlaceholder: 'Scegli una ricetta...',
+
+    storyToolbarBold: 'Grassetto',
+    storyToolbarItalic: 'Corsivo',
+    storyToolbarUnderline: 'Sottolineato',
+    storyToolbarHeading: 'Sottotitolo',
+    storyToolbarBullet: 'Elenco puntato',
+    storyToolbarQuote: 'Citazione',
+    storyToolbarClear: 'Cancella formattazione',
+    storyVisualMode: 'Visivo',
+    storyMarkupMode: 'Markup',
+    storyMarkupHint: 'Supporta **grassetto**, *corsivo*, __sottolineato__, ### titolo, > nota e - elenco.',
+    storyParagraphsCount: (count, max) => `${count} / ${max} paragrafi`,
+
+    aiErrUnavailable: 'L’assistente di cucina è temporaneamente non disponibile o occupato. Riprova tra un momento.',
+    aiErrRateLimit: 'Troppe richieste di ricette in poco tempo. Attendi un attimo prima di riprovare.',
+    aiErrInvalidResponse: 'L’assistente ha restituito una risposta tecnica illeggibile. Riprova.',
+    aiErrTimeout: 'La preparazione della ricetta ha richiesto troppo tempo. Riprova con una richiesta più breve.',
+    aiErrNetwork: 'Impossibile raggiungere l’assistente in questo momento. Controlla la connessione e riprova.',
+    aiErrSaveFailed: 'La ricetta è stata creata ma il salvataggio non è riuscito. Controlla i permessi e riprova.',
+    aiErrGeneric: 'Si è verificato un errore tecnico durante la preparazione della ricetta. Riprova tra poco.',
   },
 };
 

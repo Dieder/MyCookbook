@@ -5,7 +5,9 @@ import {
   UI_STRINGS,
 } from '../i18n/translations';
 import { Chapter, LanguageCode, Recipe } from '../types/cookbook';
+import { parseApiJsonSafe, toHumanReadableAiError } from '../utils/aiError';
 import { formatMinutesLabel } from '../utils/formatters';
+import { StoryMarkupRenderer } from '../utils/storyMarkup';
 
 interface AskRecipeModalProps {
   isOpen: boolean;
@@ -78,14 +80,31 @@ export function AskRecipeModal({
           language: lang,
         }),
       });
-      const data = await response.json();
-      if (!response.ok || !data.recipe) {
-        throw new Error(data.error || 'Could not compose this recipe right now.');
+      const parsed = await parseApiJsonSafe<{
+        recipe?: Omit<Recipe, 'id' | 'plateNumber'>;
+        error?: string;
+        errorCode?: string;
+      }>(response);
+
+      if (parsed.invalidJson || !parsed.ok || !parsed.data?.recipe) {
+        setError(
+          toHumanReadableAiError(
+            {
+              status: parsed.status,
+              invalidJson: parsed.invalidJson,
+              errorCode: parsed.data?.errorCode,
+              serverMessage: parsed.data?.error,
+            },
+            lang
+          )
+        );
+        return;
       }
-      const saved = await onRecipeCreated(data.recipe);
+
+      const saved = await onRecipeCreated(parsed.data.recipe);
       setResultRecipe(saved);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unable to generate recipe.');
+      setError(toHumanReadableAiError({ err }, lang));
     } finally {
       setIsGenerating(false);
     }
@@ -145,9 +164,12 @@ export function AskRecipeModal({
               <p className="font-serif italic text-base text-[var(--text-muted)] mt-1">
                 {resultRecipe.subtitle}
               </p>
-              <p className="font-serif text-sm text-[var(--text-ink)]/90 leading-relaxed mt-3">
-                {resultRecipe.storyParagraphs[0] || resultRecipe.storyExcerpt}
-              </p>
+              <div className="mt-3">
+                <StoryMarkupRenderer
+                  text={resultRecipe.storyParagraphs[0] || resultRecipe.storyExcerpt}
+                  className="text-sm"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">

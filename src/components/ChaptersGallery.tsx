@@ -3,6 +3,7 @@ import { Bookmark, ChevronLeft, ChevronRight, Clock, PlayCircle, Search, Sparkle
 import { UI_STRINGS } from '../i18n/translations';
 import { Chapter, LanguageCode, Recipe, TechniqueClip } from '../types/cookbook';
 import { resolveRecipeClips } from '../utils/youtube';
+import { stripStoryMarkup } from '../utils/storyMarkup';
 import { EditorialPlateImage } from './EditorialPlateImage';
 
 interface ChaptersGalleryProps {
@@ -338,7 +339,7 @@ export function ChaptersGallery({
                   {recipe.title}
                 </h2>
                 <p className="text-sm font-serif text-[var(--text-muted)] mt-2 leading-relaxed">
-                  {recipe.storyExcerpt}
+                  {stripStoryMarkup(recipe.storyExcerpt)}
                 </p>
 
                 <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">

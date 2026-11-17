@@ -1,5 +1,6 @@
 import { Chapter, Recipe } from '../types/cookbook';
 import { EXPANDED_RECIPES } from './expandedRecipesCatalog';
+import { IMPORTED_GITHUB_RECIPES } from './importedGitHubRecipes';
 
 export const BOOK_METADATA = {
   brand: 'Maison Feuille',
@@ -1111,4 +1112,8 @@ export const FEATURED_RECIPES: Recipe[] = [
   },
 ];
 
-export const RECIPES: Recipe[] = [...FEATURED_RECIPES, ...EXPANDED_RECIPES];
+export const RECIPES: Recipe[] = [
+  ...FEATURED_RECIPES,
+  ...IMPORTED_GITHUB_RECIPES,
+  ...EXPANDED_RECIPES,
+];

@@ -42,9 +42,9 @@ export function TopNavBar({
         <button
           type="button"
           onClick={() => onNavigate('cover')}
-          className="font-display text-xl font-semibold tracking-tight text-[var(--text-ink)] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-primary)]"
+          className="font-handwriting text-3xl font-semibold tracking-normal leading-none text-[var(--text-ink)] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-primary)]"
         >
-          Maison Feuille
+          My cookbook
         </button>
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-serif">

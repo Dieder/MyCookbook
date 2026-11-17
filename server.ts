@@ -360,6 +360,118 @@ function resolveTargetLanguage(raw: unknown): { code: string; name: string } {
   return { code, name: LANGUAGE_NAMES[code] };
 }
 
+function toHumanReadableServerAiError(err: unknown): {
+  httpStatus: number;
+  errorCode: string;
+  error: string;
+} {
+  let rawMsg = err instanceof Error ? err.message : String(err ?? '');
+  let extractedStatus =
+    typeof (err as { status?: unknown })?.status === 'number'
+      ? Number((err as { status?: number }).status)
+      : 0;
+  let extractedCodeText = '';
+
+  // Google GenAI errors often embed serialized JSON inside err.message
+  const jsonStart = rawMsg.indexOf('{');
+  if (jsonStart !== -1) {
+    try {
+      const parsed = JSON.parse(rawMsg.slice(jsonStart)) as {
+        error?: { code?: number; status?: string; message?: string };
+      };
+      if (parsed?.error) {
+        if (typeof parsed.error.code === 'number') extractedStatus = parsed.error.code;
+        if (typeof parsed.error.status === 'string') extractedCodeText = parsed.error.status;
+        if (typeof parsed.error.message === 'string') rawMsg = parsed.error.message;
+      }
+    } catch {
+      // Ignore JSON parsing failure on error message
+    }
+  }
+
+  const hay = `${extractedStatus} ${extractedCodeText} ${rawMsg}`.toLowerCase();
+
+  if (
+    extractedStatus === 429 ||
+    hay.includes('resource_exhausted') ||
+    hay.includes('quota') ||
+    hay.includes('rate limit')
+  ) {
+    return {
+      httpStatus: 429,
+      errorCode: 'AI_RATE_LIMIT',
+      error: 'Too many recipe requests were made at once. Please wait a moment and try again.',
+    };
+  }
+
+  if (
+    extractedStatus === 503 ||
+    hay.includes('unavailable') ||
+    hay.includes('overloaded') ||
+    hay.includes('high demand')
+  ) {
+    return {
+      httpStatus: 503,
+      errorCode: 'AI_UNAVAILABLE',
+      error: 'The culinary AI service is temporarily busy or unavailable. Please try again shortly.',
+    };
+  }
+
+  if (
+    extractedStatus === 401 ||
+    extractedStatus === 403 ||
+    hay.includes('permission_denied') ||
+    hay.includes('api_key') ||
+    hay.includes('api key')
+  ) {
+    return {
+      httpStatus: 503,
+      errorCode: 'AI_CONFIG',
+      error: 'The culinary AI service is temporarily unavailable due to a server configuration issue.',
+    };
+  }
+
+  if (
+    extractedStatus === 504 ||
+    hay.includes('deadline_exceeded') ||
+    hay.includes('timeout') ||
+    hay.includes('etimedout')
+  ) {
+    return {
+      httpStatus: 504,
+      errorCode: 'AI_TIMEOUT',
+      error: 'The recipe request took too long to respond. Please try again.',
+    };
+  }
+
+  if (
+    hay.includes('fetch failed') ||
+    hay.includes('econnrefused') ||
+    hay.includes('enotfound') ||
+    hay.includes('network')
+  ) {
+    return {
+      httpStatus: 502,
+      errorCode: 'AI_NETWORK',
+      error: 'Could not reach the culinary AI service right now. Please try again in a moment.',
+    };
+  }
+
+  if (extractedStatus === 404 || hay.includes('not_found')) {
+    return {
+      httpStatus: 502,
+      errorCode: 'AI_UNAVAILABLE',
+      error: 'The culinary AI model is temporarily unavailable. Please try again in a moment.',
+    };
+  }
+
+  return {
+    httpStatus: 502,
+    errorCode: 'AI_TECH_ERROR',
+    error: 'A technical error occurred while generating the recipe. Please try again in a moment.',
+  };
+}
+
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
@@ -406,17 +518,36 @@ Requirements:
 
       const rawText = (response.text ?? '').trim();
       if (!rawText) {
-        return res.status(502).json({ error: 'The culinary model returned an empty recipe.' });
+        return res.status(502).json({
+          errorCode: 'AI_INVALID_JSON',
+          error: 'The culinary model returned an empty recipe. Please try again.',
+        });
       }
 
-      const parsed = JSON.parse(rawText) as Record<string, unknown>;
+      let parsed: Record<string, unknown>;
+      try {
+        const candidate = JSON.parse(rawText) as unknown;
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+          throw new Error('Model response was not a JSON object');
+        }
+        parsed = candidate as Record<string, unknown>;
+      } catch (parseErr) {
+        console.error('Invalid JSON from /api/recipes/generate:', parseErr);
+        return res.status(502).json({
+          errorCode: 'AI_INVALID_JSON',
+          error: 'The chef assistant returned an unreadable recipe format. Please try asking again.',
+        });
+      }
+
       const normalized = normalizeRecipePayload(parsed, undefined, targetChapter);
       return res.json({ recipe: normalized });
     } catch (err: unknown) {
       console.error('Error generating recipe:', err);
-      const message =
-        err instanceof Error ? err.message : 'Unable to generate recipe right now.';
-      return res.status(500).json({ error: message });
+      const mapped = toHumanReadableServerAiError(err);
+      return res.status(mapped.httpStatus).json({
+        errorCode: mapped.errorCode,
+        error: mapped.error,
+      });
     }
   });
 
@@ -460,19 +591,38 @@ Requirements:
 
       const rawText = (response.text ?? '').trim();
       if (!rawText) {
-        return res.status(502).json({ error: 'The culinary model returned an empty adaptation.' });
+        return res.status(502).json({
+          errorCode: 'AI_INVALID_JSON',
+          error: 'The culinary model returned an empty adaptation. Please try again.',
+        });
       }
 
-      const parsed = JSON.parse(rawText) as Record<string, unknown>;
+      let parsed: Record<string, unknown>;
+      try {
+        const candidate = JSON.parse(rawText) as unknown;
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+          throw new Error('Model response was not a JSON object');
+        }
+        parsed = candidate as Record<string, unknown>;
+      } catch (parseErr) {
+        console.error('Invalid JSON from /api/recipes/customize:', parseErr);
+        return res.status(502).json({
+          errorCode: 'AI_INVALID_JSON',
+          error: 'The chef assistant returned an unreadable recipe format. Please try again.',
+        });
+      }
+
       const normalized = normalizeRecipePayload(parsed, recipe.heroImage, sanitizeChapterId(recipe.chapterId));
       normalized.customizationNote =
         normalized.customizationNote || `Adapted: ${instruction.trim()}`;
       return res.json({ recipe: normalized });
     } catch (err: unknown) {
       console.error('Error customizing recipe:', err);
-      const message =
-        err instanceof Error ? err.message : 'Unable to customize recipe right now.';
-      return res.status(500).json({ error: message });
+      const mapped = toHumanReadableServerAiError(err);
+      return res.status(mapped.httpStatus).json({
+        errorCode: mapped.errorCode,
+        error: mapped.error,
+      });
     }
   });
 
