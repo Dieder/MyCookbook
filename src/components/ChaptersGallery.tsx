@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bookmark, ChevronLeft, ChevronRight, Clock, PlayCircle, Search, Sparkles } from 'lucide-react';
-import { UI_STRINGS } from '../i18n/translations';
+import { Bookmark, ChevronLeft, ChevronRight, Clock, PlayCircle, Search, Sparkles, Users } from 'lucide-react';
+import { formatPersonLabel, UI_STRINGS } from '../i18n/translations';
 import { Chapter, LanguageCode, Recipe, TechniqueClip } from '../types/cookbook';
 import { resolveRecipeClips } from '../utils/youtube';
 import { stripStoryMarkup } from '../utils/storyMarkup';
@@ -308,11 +308,20 @@ export function ChaptersGallery({
                     <span aria-hidden="true">·</span>
                     <span>{recipe.region}</span>
                     <span aria-hidden="true">·</span>
-                    <span>
-                      {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                      <span>
+                        {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+                      </span>
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>{t.servesCount(recipe.baseServings)}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                      <span>{recipe.baseServings}</span>
+                      <span className="hidden md:inline">
+                        {formatPersonLabel(recipe.baseServings, lang)}
+                      </span>
+                    </span>
                   </div>
 
                   <button

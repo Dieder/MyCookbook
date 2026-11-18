@@ -653,12 +653,19 @@ export function BookSpreadView({
               <span aria-hidden="true">·</span>
               <span>{recipe.region}</span>
               <span aria-hidden="true">·</span>
-              <span>
-                {t.prepWord} {recipe.prepMinutes} {t.minUnit}
+              <span className="inline-flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                <span>
+                  {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+                </span>
               </span>
               <span aria-hidden="true">·</span>
-              <span>
-                {t.cookWord} {recipe.cookMinutes} {t.minUnit}
+              <span className="inline-flex items-center gap-1">
+                <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                <span>{servings}</span>
+                <span className="hidden md:inline">
+                  {formatPersonLabel(servings, lang)}
+                </span>
               </span>
               <span aria-hidden="true">·</span>
               <span>{t.byAuthor(recipe.chefAuthor)}</span>
@@ -967,8 +974,9 @@ export function BookSpreadView({
                     </div>
 
                     {step.durationSeconds && (
-                      <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums shrink-0">
-                        {formatMinutesLabel(step.durationSeconds)}
+                      <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums shrink-0 inline-flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                        <span>{formatMinutesLabel(step.durationSeconds)}</span>
                       </span>
                     )}
                   </div>

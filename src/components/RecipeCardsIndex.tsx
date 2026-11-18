@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  BookOpen,
   Bookmark,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
   Clock,
+  ListChecks,
+  MoreVertical,
   PlayCircle,
   Search,
   Sparkles,
@@ -61,7 +64,29 @@ export function RecipeCardsIndex({
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [expandedCardIds, setExpandedCardIds] = useState<Set<string>>(() => new Set());
+  const [openMenuRecipeId, setOpenMenuRecipeId] = useState<string | null>(null);
   const t = UI_STRINGS[lang];
+
+  useEffect(() => {
+    if (!openMenuRecipeId) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && !target.closest('[data-recipe-card-menu]')) {
+        setOpenMenuRecipeId(null);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenuRecipeId(null);
+      }
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openMenuRecipeId]);
 
   const toggleCardIngredients = (recipeId: string) => {
     setExpandedCardIds((prev) => {
@@ -132,8 +157,8 @@ export function RecipeCardsIndex({
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 sm:py-10 space-y-10">
-      <div className="border-b border-[var(--border-line)] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-5 sm:py-10 space-y-5 sm:space-y-8">
+      <div className="border-b border-[var(--border-line)] pb-4 sm:pb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
         <div>
           <p className="text-xs font-mono uppercase tracking-[0.14em] text-[var(--accent-secondary)]">
             {t.miseEnPlaceIndex}
@@ -211,204 +236,255 @@ export function RecipeCardsIndex({
       )}
 
       {/* 2-Column Linen-Ruled Recipe Card Folio */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
         {pagedRecipes.map((recipe) => {
           const currentServings = servingsMap[recipe.id] ?? recipe.baseServings;
           const multiplier = currentServings / recipe.baseServings;
           const isSaved = favoriteIds.includes(recipe.id);
           const isExpanded = expandedCardIds.has(recipe.id);
 
+          const firstClip = resolveRecipeClips(recipe)[0];
+          const isMenuOpen = openMenuRecipeId === recipe.id;
+
           return (
             <article
               key={recipe.id}
-              className="bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col justify-between"
+              className="bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col"
             >
-              {/* Card Top Masthead */}
-              <div>
-                <div className="p-6 border-b border-[var(--border-line)] flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 min-w-0">
-                    <img
-                      src={recipe.heroImage}
-                      alt={recipe.title}
-                      referrerPolicy="no-referrer"
-                      className="w-20 h-20 object-cover border border-[var(--border-line)] shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs font-mono text-[var(--accent-secondary)]">
-                        {recipe.status === 'draft' && (
-                          <span className="uppercase tracking-wider font-medium mr-1.5">
-                            {t.statusDraft} ·
-                          </span>
-                        )}
-                        {t.plateLabel(recipe.plateNumber)} · {recipe.region}
+              {/* Full-width Photo Plate */}
+              <button
+                type="button"
+                onClick={() => onSelectRecipe(recipe.id)}
+                aria-label={recipe.title}
+                className="w-full h-36 sm:h-44 border-b border-[var(--border-line)] overflow-hidden bg-[var(--bg-elevated)] cursor-pointer block"
+              >
+                <img
+                  src={recipe.heroImage}
+                  alt={recipe.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                />
+              </button>
+
+              {/* Description & Metadata Under Photo */}
+              <div className="px-4 py-3 sm:px-5 sm:py-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-mono text-[var(--accent-secondary)] truncate">
+                      {recipe.status === 'draft' && (
+                        <span className="uppercase tracking-wider font-medium mr-1.5">
+                          {t.statusDraft} ·
+                        </span>
+                      )}
+                      {t.plateLabel(recipe.plateNumber)} · {recipe.region}
+                    </p>
+                    <h2
+                      onClick={() => onSelectRecipe(recipe.id)}
+                      className="font-display text-lg sm:text-xl text-[var(--text-ink)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer mt-0.5 leading-snug"
+                    >
+                      {recipe.title}
+                    </h2>
+                    {recipe.subtitle && (
+                      <p className="text-xs sm:text-sm font-serif italic text-[var(--text-muted)] line-clamp-1 mt-0.5">
+                        {recipe.subtitle}
                       </p>
-                      <h2
-                        onClick={() => onSelectRecipe(recipe.id)}
-                        className="font-display text-xl text-[var(--text-ink)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer mt-1 leading-snug"
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-0.5 shrink-0" data-recipe-card-menu>
+                    <button
+                      type="button"
+                      onClick={() => onToggleFavorite(recipe.id)}
+                      aria-label={isSaved ? t.removeBookmarkAria : t.saveRecipeAria}
+                      className={`p-1.5 cursor-pointer shrink-0 ${
+                        isSaved
+                          ? 'text-[var(--accent-secondary)]'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
+                      }`}
+                    >
+                      <Bookmark className="w-4 h-4" fill={isSaved ? 'currentColor' : 'none'} />
+                    </button>
+
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenuRecipeId((prev) =>
+                            prev === recipe.id ? null : recipe.id
+                          )
+                        }
+                        aria-haspopup="menu"
+                        aria-expanded={isMenuOpen}
+                        aria-label={`${t.openBookSpread} / ${t.cookAndTime}`}
+                        className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-ink)] cursor-pointer shrink-0"
                       >
-                        {recipe.title}
-                      </h2>
-                      <p className="text-xs font-mono text-[var(--text-muted)] mt-1.5 tabular-nums">
-                        {t.prepWord} {recipe.prepMinutes}m · {t.cookWord} {recipe.cookMinutes}m ·{' '}
-                        {recipe.steps.length} {t.stepsWord}
-                      </p>
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div
+                          role="menu"
+                          className="absolute right-0 top-full mt-1 w-52 bg-[var(--bg-paper)] border border-[var(--border-line)] shadow-lg z-20 py-1"
+                        >
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuRecipeId(null);
+                              onSelectRecipe(recipe.id);
+                            }}
+                            className="w-full px-3.5 py-2.5 text-left text-xs font-mono text-[var(--text-ink)] hover:bg-[var(--bg-elevated)] inline-flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" />
+                            <span>{t.openBookSpread}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuRecipeId(null);
+                              onEnterCookMode(recipe.id);
+                            }}
+                            className="w-full px-3.5 py-2.5 text-left text-xs font-mono text-[var(--text-ink)] hover:bg-[var(--bg-elevated)] inline-flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <Utensils className="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" />
+                            <span>{t.cookAndTime}</span>
+                          </button>
+
+                          {firstClip && (
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => {
+                                setOpenMenuRecipeId(null);
+                                onOpenClip(firstClip, recipe.title);
+                              }}
+                              className="w-full px-3.5 py-2.5 text-left text-xs font-mono text-[var(--text-ink)] hover:bg-[var(--bg-elevated)] inline-flex items-center gap-2.5 cursor-pointer"
+                            >
+                              <PlayCircle className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
+                              <span>{t.prepClipShort}</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
+                  </div>
+                </div>
+
+                {/* Single Compact Row: Timer + Persons + Collapsible Ingredients Trigger */}
+                <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 text-xs font-mono text-[var(--text-muted)] tabular-nums min-w-0">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                      <Clock className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
+                      <span>
+                        {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+                      </span>
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
+                      <span>{currentServings}</span>
+                      <span className="hidden md:inline">
+                        {formatPersonLabel(currentServings, lang)}
+                      </span>
+                    </span>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => onToggleFavorite(recipe.id)}
-                    aria-label={isSaved ? t.removeBookmarkAria : t.saveRecipeAria}
-                    className={`p-1.5 cursor-pointer shrink-0 ${
-                      isSaved
-                        ? 'text-[var(--accent-secondary)]'
-                        : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-                    }`}
-                  >
-                    <Bookmark className="w-4 h-4" fill={isSaved ? 'currentColor' : 'none'} />
-                  </button>
-                </div>
-
-                {/* Collapsible Persons & Ingredients Panel (closed by default) */}
-                <div>
-                  <button
-                    type="button"
                     onClick={() => toggleCardIngredients(recipe.id)}
                     aria-expanded={isExpanded}
-                    className={`w-full px-6 py-3 flex items-center justify-between gap-4 text-left cursor-pointer transition-colors hover:bg-[var(--bg-elevated)]/60 ${
-                      isExpanded ? 'border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/40' : ''
-                    }`}
+                    aria-label={t.personsAndIngredients}
+                    className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--text-ink)] hover:text-[var(--accent-primary)] cursor-pointer tabular-nums shrink-0 py-0.5"
                   >
-                    <span className="text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
-                      <span className="hidden md:inline">{t.personsAndIngredients}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-2 text-xs font-mono text-[var(--text-muted)] tabular-nums shrink-0">
-                      <span>
-                        {currentServings} {formatPersonLabel(currentServings, lang)} ·{' '}
-                        {recipe.ingredients.length} {t.ingredientsShortWord}
-                      </span>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[var(--text-ink)]" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-[var(--text-ink)]" />
-                      )}
-                    </span>
+                    <ListChecks className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
+                    <span className="hidden md:inline">{t.ingredientsShortWord}</span>
+                    <span>({recipe.ingredients.length})</span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
                   </button>
-
-                  {isExpanded && (
-                    <div>
-                      {/* Person Count Selector Strip */}
-                      <div className="px-6 py-3 bg-[var(--bg-elevated)]/60 border-b border-[var(--border-line)] flex items-center justify-between gap-4">
-                        <span className="text-xs font-mono text-[var(--text-muted)] inline-flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
-                          {t.personsLabel}
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onChangeServings(recipe.id, Math.max(1, currentServings - 1))
-                            }
-                            aria-label={t.decreasePersonsAria}
-                            className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
-                          >
-                            −
-                          </button>
-                          <select
-                            value={currentServings}
-                            onChange={(e) =>
-                              onChangeServings(recipe.id, Number(e.target.value))
-                            }
-                            aria-label={`${t.personCountLabel}: ${recipe.title}`}
-                            className="h-7 px-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] tabular-nums focus:outline-none focus:border-[var(--accent-primary)]"
-                          >
-                            {Array.from(
-                              new Set([1, 2, 3, 4, 5, 6, 8, 10, 12, currentServings])
-                            )
-                              .sort((a, b) => a - b)
-                              .map((count) => (
-                                <option key={count} value={count}>
-                                  {count} {formatPersonLabel(count, lang)}
-                                </option>
-                              ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onChangeServings(recipe.id, Math.min(24, currentServings + 1))
-                            }
-                            aria-label={t.increasePersonsAria}
-                            className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Ruled Ingredient Ledger */}
-                      <ul className="px-6 py-4 divide-y divide-[var(--border-subtle)]">
-                        {recipe.ingredients.map((ing) => {
-                          const baseAmt =
-                            unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
-                          const unit =
-                            unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
-                          const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit);
-
-                          return (
-                            <li
-                              key={ing.id}
-                              className="py-2 flex items-baseline justify-between gap-4 text-sm font-serif"
-                            >
-                              <span className="text-[var(--text-ink)]">{ing.name}</span>
-                              <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
-                                {formatted} {unit}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Card Action Footer */}
-              <div className="px-6 py-4 border-t border-[var(--border-line)] bg-[var(--bg-paper)] flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => onSelectRecipe(recipe.id)}
-                    className="text-xs font-mono text-[var(--accent-primary)] hover:underline cursor-pointer whitespace-nowrap shrink-0"
-                  >
-                    {t.openBookSpread}
-                  </button>
-                  {(() => {
-                    const firstClip = resolveRecipeClips(recipe)[0];
-                    if (!firstClip) return null;
-                    return (
+              {/* Collapsible Persons & Ingredients Panel (closed by default) */}
+              {isExpanded && (
+                <div className="border-t border-[var(--border-line)]">
+                  {/* Person Count Selector Strip */}
+                  <div className="px-4 sm:px-5 py-2.5 bg-[var(--bg-elevated)]/60 border-b border-[var(--border-line)] flex items-center justify-between gap-4">
+                    <span className="text-xs font-mono text-[var(--text-muted)] inline-flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                      <span className="hidden md:inline">{t.personsLabel}</span>
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => onOpenClip(firstClip, recipe.title)}
-                        className="text-xs font-mono text-[var(--accent-secondary)] hover:text-[var(--text-ink)] inline-flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                        onClick={() =>
+                          onChangeServings(recipe.id, Math.max(1, currentServings - 1))
+                        }
+                        aria-label={t.decreasePersonsAria}
+                        className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
                       >
-                        <PlayCircle className="w-3.5 h-3.5" />
-                        {t.prepClipShort}
+                        −
                       </button>
-                    );
-                  })()}
-                </div>
+                      <select
+                        value={currentServings}
+                        onChange={(e) =>
+                          onChangeServings(recipe.id, Number(e.target.value))
+                        }
+                        aria-label={`${t.personCountLabel}: ${recipe.title}`}
+                        className="h-7 px-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] tabular-nums focus:outline-none focus:border-[var(--accent-primary)]"
+                      >
+                        {Array.from(
+                          new Set([1, 2, 3, 4, 5, 6, 8, 10, 12, currentServings])
+                        )
+                          .sort((a, b) => a - b)
+                          .map((count) => (
+                            <option key={count} value={count}>
+                              {count} {formatPersonLabel(count, lang)}
+                            </option>
+                          ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onChangeServings(recipe.id, Math.min(24, currentServings + 1))
+                        }
+                        aria-label={t.increasePersonsAria}
+                        className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => onEnterCookMode(recipe.id)}
-                  className="px-3.5 py-1.5 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-xs font-mono inline-flex items-center gap-1.5 hover:opacity-90 cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  <Utensils className="w-3 h-3" />
-                  {t.cookAndTime}
-                  <Clock className="w-3 h-3 opacity-80" />
-                </button>
-              </div>
+                  {/* Ruled Ingredient Ledger */}
+                  <ul className="px-4 sm:px-5 py-3 divide-y divide-[var(--border-subtle)]">
+                    {recipe.ingredients.map((ing) => {
+                      const baseAmt =
+                        unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
+                      const unit =
+                        unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
+                      const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit);
+
+                      return (
+                        <li
+                          key={ing.id}
+                          className="py-1.5 flex items-baseline justify-between gap-4 text-sm font-serif"
+                        >
+                          <span className="text-[var(--text-ink)]">{ing.name}</span>
+                          <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
+                            {formatted} {unit}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </article>
           );
         })}

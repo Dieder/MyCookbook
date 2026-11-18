@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   BookOpen,
+  Clock,
   Edit3,
   Eye,
   EyeOff,
@@ -9,6 +10,7 @@ import {
   Shield,
   Sparkles,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import { formatPersonLabel, UI_STRINGS } from '../i18n/translations';
@@ -311,17 +313,19 @@ export function MyRecipesPage({
                     <span aria-hidden="true">·</span>
                     <span>{chapter ? chapter.title : recipe.chapterId}</span>
                     <span aria-hidden="true">·</span>
-                    <span>
-                      {t.prepWord} {recipe.prepMinutes} {t.minUnit}
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                      <span>
+                        {recipe.prepMinutes + recipe.cookMinutes} {t.minUnit}
+                      </span>
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>
-                      {t.cookWord} {recipe.cookMinutes} {t.minUnit}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span>
-                      {recipe.baseServings}{' '}
-                      {formatPersonLabel(recipe.baseServings, lang)}
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                      <span>{recipe.baseServings}</span>
+                      <span className="hidden md:inline">
+                        {formatPersonLabel(recipe.baseServings, lang)}
+                      </span>
                     </span>
                   </div>
 

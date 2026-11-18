@@ -1351,12 +1351,12 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-[var(--border-line)] bg-[var(--bg-surface)]/90 mt-16">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-3 md:py-7 text-xs text-[var(--text-muted)]">
+      <footer className="md:hidden border-t border-[var(--border-line)] bg-[var(--bg-surface)]/90 mt-16">
+        <div className="max-w-[1280px] mx-auto px-4 py-3 text-xs text-[var(--text-muted)]">
           {/* Mobile Footer: Borderless pro icons with soft active highlight */}
           <nav
             aria-label="Footer navigation"
-            className="flex md:hidden items-center justify-around gap-1"
+            className="flex items-center justify-around gap-1"
           >
             {[
               { id: 'cover' as const, label: t.navCover, Icon: Home },
@@ -1392,45 +1392,6 @@ export default function App() {
               );
             })}
           </nav>
-
-          {/* Tablet & Desktop Footer: Text links only */}
-          <div className="hidden md:flex flex-wrap items-center justify-end gap-6 font-mono">
-            <button
-              type="button"
-              onClick={() => navigateView('cover')}
-              className="hover:text-[var(--text-ink)] cursor-pointer"
-            >
-              {t.navCover}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateView('chapters')}
-              className="hover:text-[var(--text-ink)] cursor-pointer"
-            >
-              {t.navChapters}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateView('cards')}
-              className="hover:text-[var(--text-ink)] cursor-pointer"
-            >
-              {t.navCards}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateView('calendar')}
-              className="hover:text-[var(--text-ink)] cursor-pointer"
-            >
-              {t.navCalendar}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateView('settings')}
-              className="hover:text-[var(--text-ink)] cursor-pointer"
-            >
-              {t.navSettings}
-            </button>
-          </div>
         </div>
       </footer>
 
