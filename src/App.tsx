@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { BookOpen, CalendarDays, Home, LayoutGrid, SlidersHorizontal } from 'lucide-react';
 import { AdminPage } from './components/AdminPage';
 import { AskRecipeModal } from './components/AskRecipeModal';
 import { BookCoverFrontispiece } from './components/BookCoverFrontispiece';
@@ -1162,7 +1163,6 @@ export default function App() {
             favoriteIds={favoriteIds}
             onToggleFavorite={toggleFavorite}
             unitSystem={unitSystem}
-            onChangeUnitSystem={setUnitSystem}
             servingsMap={servingsMap}
             onChangeServings={updateServings}
             lang={language}
@@ -1351,10 +1351,50 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-[var(--border-line)] bg-[var(--bg-surface)]/80 mt-16">
-        <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-serif text-[var(--text-muted)]">
-          <p>{t.footerColophon}</p>
-          <div className="flex flex-wrap items-center gap-6 font-mono">
+      <footer className="border-t border-[var(--border-line)] bg-[var(--bg-surface)]/90 mt-16">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-3 md:py-7 text-xs text-[var(--text-muted)]">
+          {/* Mobile Footer: Borderless pro icons with soft active highlight */}
+          <nav
+            aria-label="Footer navigation"
+            className="flex md:hidden items-center justify-around gap-1"
+          >
+            {[
+              { id: 'cover' as const, label: t.navCover, Icon: Home },
+              { id: 'chapters' as const, label: t.navChapters, Icon: BookOpen },
+              { id: 'cards' as const, label: t.navCards, Icon: LayoutGrid },
+              { id: 'calendar' as const, label: t.navCalendar, Icon: CalendarDays },
+              { id: 'settings' as const, label: t.navSettings, Icon: SlidersHorizontal },
+            ].map(({ id, label, Icon }) => {
+              const isActive =
+                activeView === id || (activeView === 'spread' && id === 'chapters');
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => navigateView(id)}
+                  aria-label={label}
+                  title={label}
+                  className="flex-1 min-h-[44px] inline-flex items-center justify-center cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
+                >
+                  <span
+                    className={`px-4 py-1.5 rounded-full inline-flex items-center justify-center transition-colors ${
+                      isActive
+                        ? 'bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]'
+                        : 'text-[var(--text-muted)] group-hover:bg-[var(--bg-elevated)] group-hover:text-[var(--text-ink)]'
+                    }`}
+                  >
+                    <Icon
+                      className="w-5 h-5"
+                      strokeWidth={isActive ? 2.2 : 1.75}
+                    />
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Tablet & Desktop Footer: Text links only */}
+          <div className="hidden md:flex flex-wrap items-center justify-end gap-6 font-mono">
             <button
               type="button"
               onClick={() => navigateView('cover')}

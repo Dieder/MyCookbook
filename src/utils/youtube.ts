@@ -105,8 +105,8 @@ export function normalizeOptionalYouTubeUrl(rawUrl?: string | null): string | un
 }
 
 /**
- * Resolves the playable clip for a single recipe step, preferring step-level YouTube links
- * or falling back to a linked curated technique clip. Returns undefined if no clip exists.
+ * Resolves the playable clip for a single recipe step ONLY if a real video URL exists
+ * (either on the step itself or on its linked technique clip). Returns undefined if no real URL is present.
  */
 export function resolveStepClip(
   step: RecipeStep,
@@ -139,11 +139,23 @@ export function resolveStepClip(
     };
   }
 
-  return linkedClip;
+  const validLinkedVideo =
+    linkedClip && toYouTubeEmbedUrl(linkedClip.videoUrl)
+      ? linkedClip.videoUrl?.trim()
+      : undefined;
+
+  if (linkedClip && validLinkedVideo) {
+    return {
+      ...linkedClip,
+      videoUrl: validLinkedVideo,
+    };
+  }
+
+  return undefined;
 }
 
 /**
- * Collects all playable clips for a recipe (curated technique clips plus any step YouTube clips).
+ * Collects all playable clips for a recipe that contain a real video URL.
  */
 export function resolveRecipeClips(recipe: Recipe): TechniqueClip[] {
   const clips: TechniqueClip[] = [];
@@ -153,11 +165,10 @@ export function resolveRecipeClips(recipe: Recipe): TechniqueClip[] {
     const matchingStep = recipe.steps.find(
       (s) => s.techniqueClipId === tech.id && toYouTubeEmbedUrl(s.videoUrl)
     );
-    clips.push(
-      matchingStep?.videoUrl
-        ? { ...tech, videoUrl: matchingStep.videoUrl.trim() }
-        : tech
-    );
+    const realUrl = matchingStep?.videoUrl?.trim() || (toYouTubeEmbedUrl(tech.videoUrl) ? tech.videoUrl?.trim() : undefined);
+    if (!realUrl) continue;
+
+    clips.push({ ...tech, videoUrl: realUrl });
     seenIds.add(tech.id);
   }
 

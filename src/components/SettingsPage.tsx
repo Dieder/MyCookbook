@@ -157,10 +157,12 @@ export function SettingsPage({
             <button
               type="button"
               onClick={() => void onSignOut()}
-              className="px-3.5 py-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer whitespace-nowrap shrink-0"
+              aria-label={t.signOut}
+              title={t.signOut}
+              className="p-2 md:px-3.5 md:py-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] inline-flex items-center justify-center gap-1.5 hover:bg-[var(--bg-elevated)] cursor-pointer whitespace-nowrap shrink-0"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              {t.signOut}
+              <LogOut className="w-4 h-4 md:w-3.5 md:h-3.5" />
+              <span className="hidden md:inline">{t.signOut}</span>
             </button>
           )}
         </div>

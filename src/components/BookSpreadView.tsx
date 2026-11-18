@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  BookOpen,
   Bookmark,
   CalendarDays,
   CalendarPlus,
   Check,
   Clock,
+  ListChecks,
   Pause,
   Play,
   PlayCircle,
@@ -213,6 +215,13 @@ export function BookSpreadView({
     window.setTimeout(() => setNoteSavedFeedback(false), 1200);
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="max-w-[1280px] mx-auto px-6 sm:px-10 py-8 sm:py-10 space-y-14">
       {/* Top Book Folio Navigation Strip */}
@@ -258,24 +267,46 @@ export function BookSpreadView({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => scrollToSection('recipe-ingredients')}
+            title={t.ingredientsAndScaling}
+            aria-label={t.ingredientsAndScaling}
+            className="w-9 h-9 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-ink)] inline-flex items-center justify-center hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer shrink-0"
+          >
+            <ListChecks className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => scrollToSection('recipe-method')}
+            title={t.openBookSpread}
+            aria-label={t.openBookSpread}
+            className="w-9 h-9 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-ink)] inline-flex items-center justify-center hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer shrink-0"
+          >
+            <BookOpen className="w-4 h-4" />
+          </button>
+
           <button
             type="button"
             onClick={onOpenCustomize}
-            className="px-3.5 py-2 border border-[var(--accent-primary)] bg-[var(--bg-paper)] text-[var(--accent-primary)] text-xs font-mono inline-flex items-center gap-1.5 hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            title={t.customizeWithAi}
+            aria-label={t.customizeWithAi}
+            className="w-9 h-9 border border-[var(--accent-primary)] bg-[var(--bg-paper)] text-[var(--accent-primary)] inline-flex items-center justify-center hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] transition-colors cursor-pointer shrink-0"
           >
-            <Wand2 className="w-3.5 h-3.5" />
-            {t.customizeWithAi}
+            <Wand2 className="w-4 h-4" />
           </button>
 
           {onRevertCustomization && (
             <button
               type="button"
               onClick={onRevertCustomization}
-              className="px-3 py-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] text-xs font-mono inline-flex items-center gap-1.5 hover:text-[var(--text-ink)] cursor-pointer whitespace-nowrap shrink-0"
+              title={t.originalVersion}
+              aria-label={t.originalVersion}
+              className="w-9 h-9 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] inline-flex items-center justify-center hover:text-[var(--text-ink)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer shrink-0"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              {t.originalVersion}
+              <RotateCcw className="w-4 h-4" />
             </button>
           )}
 
@@ -283,10 +314,11 @@ export function BookSpreadView({
             <button
               type="button"
               onClick={onDeleteRecipe}
+              title={t.deleteRecipeAria}
               aria-label={t.deleteRecipeAria}
-              className="px-3 py-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] text-xs font-mono inline-flex items-center gap-1 hover:text-[var(--accent-secondary)] cursor-pointer whitespace-nowrap shrink-0"
+              className="w-9 h-9 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] inline-flex items-center justify-center hover:text-[var(--accent-secondary)] hover:border-[var(--accent-secondary)] transition-colors cursor-pointer shrink-0"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
 
@@ -296,14 +328,15 @@ export function BookSpreadView({
               playSubtleClick();
               onToggleFavorite();
             }}
-            className={`px-3.5 py-2 border text-xs font-mono inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+            title={isFavorite ? t.bookmarked : t.bookmark}
+            aria-label={isFavorite ? t.bookmarked : t.bookmark}
+            className={`w-9 h-9 border inline-flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
               isFavorite
                 ? 'bg-[var(--accent-soft)] border-[var(--accent-secondary)] text-[var(--accent-secondary)]'
-                : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-ink)] hover:bg-[var(--bg-elevated)]'
+                : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-ink)] hover:bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)]'
             }`}
           >
-            <Bookmark className="w-3.5 h-3.5" fill={isFavorite ? 'currentColor' : 'none'} />
-            {isFavorite ? t.bookmarked : t.bookmark}
+            <Bookmark className="w-4 h-4" fill={isFavorite ? 'currentColor' : 'none'} />
           </button>
 
           <button
@@ -312,21 +345,26 @@ export function BookSpreadView({
               setCalendarError(null);
               setCalendarBarOpen((prev) => !prev);
             }}
-            className={`px-3.5 py-2 border text-xs font-mono inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 tabular-nums ${
+            title={t.addToCalendarBtn}
+            aria-label={t.addToCalendarBtn}
+            className={`h-9 border inline-flex items-center justify-center gap-1 transition-colors cursor-pointer shrink-0 tabular-nums ${
+              scheduledEntries.length > 0 ? 'px-2.5' : 'w-9'
+            } ${
               calendarBarOpen || scheduledEntries.length > 0
                 ? 'bg-[var(--accent-soft)] border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-ink)] hover:bg-[var(--bg-elevated)]'
+                : 'bg-[var(--bg-surface)] border-[var(--border-line)] text-[var(--text-ink)] hover:bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)]'
             }`}
           >
-            <CalendarPlus className="w-3.5 h-3.5" />
-            {t.addToCalendarBtn}
-            {scheduledEntries.length > 0 && ` (${scheduledEntries.length})`}
+            <CalendarPlus className="w-4 h-4" />
+            {scheduledEntries.length > 0 && (
+              <span className="text-[11px] font-mono">{scheduledEntries.length}</span>
+            )}
           </button>
 
           <button
             type="button"
             onClick={onEnterCookMode}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-xs font-mono inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shrink-0"
+            className="h-9 px-3.5 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-xs font-mono inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shrink-0"
           >
             <Utensils className="w-3.5 h-3.5" />
             {t.startCookMode}
@@ -670,7 +708,10 @@ export function BookSpreadView({
       {/* PAGE 2 SPREAD: Interactive Recipe Card + Step-by-Step Cooking Timers */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
         {/* Left: Interactive Recipe Card */}
-        <aside className="lg:col-span-5 bg-[var(--bg-surface)] border border-[var(--border-line)] p-6 sm:p-7 space-y-6">
+        <aside
+          id="recipe-ingredients"
+          className="lg:col-span-5 bg-[var(--bg-surface)] border border-[var(--border-line)] p-6 sm:p-7 space-y-6 scroll-mt-24"
+        >
           <div className="border-b border-[var(--border-line)] pb-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
@@ -865,7 +906,7 @@ export function BookSpreadView({
         </aside>
 
         {/* Right: Step-by-Step Preparation with Embedded Interactive Timers */}
-        <div className="lg:col-span-7 space-y-6">
+        <div id="recipe-method" className="lg:col-span-7 space-y-6 scroll-mt-24">
           <div className="border-b border-[var(--border-line)] pb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">

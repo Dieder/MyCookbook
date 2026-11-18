@@ -116,37 +116,6 @@ const RECIPE_RESPONSE_SCHEMA = {
         required: ['id', 'name', 'metricAmount', 'metricUnit', 'imperialAmount', 'imperialUnit'],
       },
     },
-    techniques: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          id: { type: Type.STRING },
-          title: { type: Type.STRING },
-          subtitle: { type: Type.STRING },
-          durationSeconds: { type: Type.INTEGER },
-          preset: {
-            type: Type.STRING,
-            description:
-              'Must be one of: butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing',
-          },
-          stages: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                timeSeconds: { type: Type.INTEGER },
-                title: { type: Type.STRING },
-                cue: { type: Type.STRING },
-                heatSetting: { type: Type.STRING },
-              },
-              required: ['timeSeconds', 'title', 'cue', 'heatSetting'],
-            },
-          },
-        },
-        required: ['id', 'title', 'subtitle', 'durationSeconds', 'preset', 'stages'],
-      },
-    },
     steps: {
       type: Type.ARRAY,
       items: {
@@ -158,7 +127,6 @@ const RECIPE_RESPONSE_SCHEMA = {
           durationSeconds: { type: Type.INTEGER },
           timerLabel: { type: Type.STRING },
           tip: { type: Type.STRING },
-          techniqueClipId: { type: Type.STRING },
         },
         required: ['stepNumber', 'title', 'instruction', 'durationSeconds', 'timerLabel'],
       },
@@ -180,7 +148,6 @@ const RECIPE_RESPONSE_SCHEMA = {
     'pairingNote',
     'chefAuthor',
     'ingredients',
-    'techniques',
     'steps',
   ],
 };
@@ -192,15 +159,6 @@ function sanitizeChapterId(raw: unknown): string {
   }
   return 'dinner';
 }
-
-const VALID_PRESETS = new Set([
-  'butter-basting',
-  'knife-julienne',
-  'emulsion-whisk',
-  'caramel-swirl',
-  'dough-fold',
-  'herb-searing',
-]);
 
 function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?: string, preferredChapterId?: string) {
   const chapterId = sanitizeChapterId(preferredChapterId || parsed.chapterId);
@@ -220,52 +178,9 @@ function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?:
     imperialUnit: String(ing.imperialUnit || 'cup').slice(0, 24),
   }));
 
-  const rawTechniques = Array.isArray(parsed.techniques) ? parsed.techniques.slice(0, 3) : [];
-  const techniques = rawTechniques.map((tech: Record<string, unknown>, idx: number) => {
-    const presetStr = String(tech.preset || 'butter-basting');
-    const duration = Math.min(30, Math.max(10, Math.round(Number(tech.durationSeconds) || 15)));
-    const stagesRaw = Array.isArray(tech.stages) ? tech.stages.slice(0, 4) : [];
-    const stages =
-      stagesRaw.length > 0
-        ? stagesRaw.map((st: Record<string, unknown>, sIdx: number) => ({
-            timeSeconds: Math.min(
-              duration - 1,
-              Math.max(0, Math.round(Number(st.timeSeconds) ?? sIdx * 5))
-            ),
-            title: String(st.title || `Stage ${sIdx + 1}`).slice(0, 80),
-            cue: String(st.cue || 'Control heat carefully and observe visual texture.').slice(
-              0,
-              220
-            ),
-            heatSetting: String(st.heatSetting || 'Medium Heat').slice(0, 40),
-          }))
-        : [
-            {
-              timeSeconds: 0,
-              title: 'Initial Technique',
-              cue: 'Bring pan to steady warmth before adding aromatics.',
-              heatSetting: 'Medium',
-            },
-          ];
-
-    return {
-      id: String(tech.id || `tech-${idx + 1}`).slice(0, 48),
-      title: String(tech.title || 'Bistro Preparation Technique').slice(0, 100),
-      subtitle: String(tech.subtitle || 'Controlled culinary execution').slice(0, 180),
-      durationSeconds: duration,
-      preset: VALID_PRESETS.has(presetStr) ? presetStr : 'butter-basting',
-      keyframeImage: heroImage,
-      stages,
-    };
-  });
-
-  const validTechIds = new Set(techniques.map((t) => t.id));
+  const techniques: Array<never> = [];
   const rawSteps = Array.isArray(parsed.steps) ? parsed.steps.slice(0, 15) : [];
   const steps = rawSteps.map((step: Record<string, unknown>, idx: number) => {
-    const stepTechId =
-      typeof step.techniqueClipId === 'string' && validTechIds.has(step.techniqueClipId)
-        ? step.techniqueClipId
-        : undefined;
     const durationSec = Math.max(30, Math.min(7200, Math.round(Number(step.durationSeconds) || 240)));
     return {
       stepNumber: idx + 1,
@@ -274,7 +189,6 @@ function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?:
       durationSeconds: durationSec,
       timerLabel: String(step.timerLabel || step.title || `Step ${idx + 1}`).slice(0, 60),
       ...(step.tip ? { tip: String(step.tip).slice(0, 260) } : {}),
-      ...(stepTechId ? { techniqueClipId: stepTechId } : {}),
     };
   });
 
@@ -503,11 +417,11 @@ Target language: ${targetLang.name} (code: "${targetLang.code}").
 Target servings (baseServings): ${targetPersons}.
 Preferred chapter: ${targetChapterLabel}.
 Requirements:
-- Write EVERY prose and label field (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, ingredients[].name, ingredients[].metricUnit, ingredients[].imperialUnit, techniques[].title/subtitle/stages, steps[].title/instruction/timerLabel/tip) naturally in ${targetLang.name}.
-- Keep chapterId set to "${targetChapter}" and techniques[].preset must be one of [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].
+- Write EVERY prose and label field (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, ingredients[].name, ingredients[].metricUnit, ingredients[].imperialUnit, steps[].title/instruction/timerLabel/tip) naturally in ${targetLang.name}.
+- Keep chapterId set to "${targetChapter}".
 - Write 2 warm editorial storyParagraphs in bistro cookbook prose, plus an evocative pullQuote in quotation marks and a concise pairingNote.
 - Provide 6 to 10 realistic ingredients with both exact metricAmount/metricUnit and imperialAmount/imperialUnit scaled for ${targetPersons} persons.
-- Include 1 to 2 interactive technique clips and 4 to 6 numbered cooking steps, each with a realistic durationSeconds (in seconds) and concise timerLabel for interactive step-by-step timers, linking techniqueClipId where relevant.`,
+- Include 4 to 6 numbered cooking steps, each with a realistic durationSeconds (in seconds) and concise timerLabel for interactive step-by-step timers.`,
         config: {
           systemInstruction: `You are the head chef and culinary editor of Maison Feuille, a warm seasonal bistro monograph. Produce accurate, delicious recipes written in ${targetLang.name} with crisp measurements, sensory cues, and realistic cooking times.`,
           responseMimeType: 'application/json',
@@ -577,10 +491,10 @@ Current Recipe JSON:
 ${JSON.stringify(recipe)}
 
 Requirements:
-- Write ALL text fields (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, customizationNote, ingredients, techniques, steps) naturally in ${targetLang.name}.
+- Write ALL text fields (title, subtitle, region, season, figureCaption, storyExcerpt, storyParagraphs, pullQuote, pairingNote, customizationNote, ingredients, steps) naturally in ${targetLang.name}.
 - Preserve the dish's editorial cookbook voice, baseServings (${Number(recipe.baseServings) || 4}), and chapterId (${String(recipe.chapterId || 'dinner')}) unless the customization changes them.
 - Accurately modify title/subtitle if the main flavor or dietary profile changed, update ingredients (both metric and imperial amounts), adjust steps and durationSeconds timers accordingly, and explain the culinary adaptation clearly in customizationNote and storyParagraphs.
-- Keep chapterId as "${sanitizeChapterId(recipe.chapterId)}" and 1 to 2 technique clips using presets from [butter-basting, knife-julienne, emulsion-whisk, caramel-swirl, dough-fold, herb-searing].`,
+- Keep chapterId as "${sanitizeChapterId(recipe.chapterId)}".`,
         config: {
           systemInstruction: `You are the head chef of Maison Feuille adapting an existing bistro recipe to a guest’s dietary preference, flavor request, or time constraint in ${targetLang.name}, keeping measurements precise and timers accurate.`,
           responseMimeType: 'application/json',

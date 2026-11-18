@@ -88,6 +88,8 @@ export interface UIStrings {
   cookWord: string;
   stepsWord: string;
   personsLabel: string;
+  personsAndIngredients: string;
+  ingredientsShortWord: string;
   decreasePersonsAria: string;
   increasePersonsAria: string;
   openBookSpread: string;
@@ -382,6 +384,7 @@ export interface UIStrings {
   todayLabel: string;
   todayBtn: string;
   noMealsScheduledDay: string;
+  noMealsUpcomingDays: string;
   addToCalendarBtn: string;
   addToCalendarDateLabel: string;
   confirmAddToCalendarBtn: string;
@@ -474,9 +477,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Cook',
     stepsWord: 'steps',
     personsLabel: 'Persons',
+    personsAndIngredients: 'Persons & Ingredients',
+    ingredientsShortWord: 'ingredients',
     decreasePersonsAria: 'Decrease person count',
     increasePersonsAria: 'Increase person count',
-    openBookSpread: 'Open Book Spread',
+    openBookSpread: 'Preparation Method',
     prepClipShort: 'Prep Clip',
     cookAndTime: 'Cook & Time',
 
@@ -755,6 +760,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Today',
     todayBtn: 'Today',
     noMealsScheduledDay: 'No courses scheduled',
+    noMealsUpcomingDays: 'No dishes scheduled for the next 7 days.',
     addToCalendarBtn: 'Add to Calendar',
     addToCalendarDateLabel: 'Schedule Date',
     confirmAddToCalendarBtn: 'Save Date',
@@ -802,7 +808,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     themeModern: 'Modern',
     themeColorful: 'Kleurrijk',
 
-    openFirstPlate: 'Open Plaat I',
+    openFirstPlate: 'Open Gerecht I',
     askChefForRecipe: 'Vraag de Chef om een Recept',
     browsePlates: 'Bekijk Gerechten',
     tableOfContents: 'Inhoudsopgave',
@@ -844,9 +850,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Koken',
     stepsWord: 'stappen',
     personsLabel: 'Personen',
+    personsAndIngredients: 'Personen & Ingrediënten',
+    ingredientsShortWord: 'ingrediënten',
     decreasePersonsAria: 'Aantal personen verlagen',
     increasePersonsAria: 'Aantal personen verhogen',
-    openBookSpread: 'Open Boekpagina',
+    openBookSpread: 'Bereidingswijze',
     prepClipShort: 'Techniekclip',
     cookAndTime: 'Koken & Timer',
 
@@ -884,8 +892,8 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     watchClipPrefix: (t) => `Bekijk Clip: ${t}`,
     previousPlate: 'Vorig Gerecht',
     nextPlate: 'Volgend Gerecht',
-    plateOfTotal: (i, t) => `Plaat ${i} van ${t}`,
-    plateLabel: (p) => p.replace('Plate ', 'Plaat '),
+    plateOfTotal: (i, t) => `Gerecht ${i} van ${t}`,
+    plateLabel: (p) => p.replace('Plate ', 'Gerecht '),
 
     cookModePrefix: 'Kookmodus',
     forPersons: (c, w) => `Voor ${c} ${w}`,
@@ -1051,7 +1059,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     unpublishToDeleteHint: 'Maak eerst ongepubliceerd om te kunnen verwijderen',
     noMyRecipesTitle: 'Nog geen eigen recepten',
     noMyRecipesHint: 'Maak je eerste recept aan of vraag de Chef om een nieuw gerecht samen te stellen.',
-    openPlateBtn: 'Open Plaat',
+    openPlateBtn: 'Open Gerecht',
     backToMyRecipes: 'Terug naar Mijn Recepten',
     recipeEditorEyebrow: 'Receptenfolio van Bijdrager',
     createRecipeTitle: 'Nieuw Recept Aanmaken',
@@ -1094,9 +1102,9 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     dishCourseField: 'Gerechtsgang',
     chefLoggedInHint: 'Ingelogde chef',
     uploadPhotoBtn: 'Foto uploaden',
-    uploadPhotoHint: 'Upload een foto van het gerecht (JPG, PNG, WebP) of kies hieronder een plaat.',
+    uploadPhotoHint: 'Upload een foto van het gerecht (JPG, PNG, WebP) of kies hieronder een gerechtfoto.',
     processingPhotoLabel: 'Foto optimaliseren...',
-    presetPlatesLabel: 'Of kies een samengestelde plaat',
+    presetPlatesLabel: 'Of kies een voorbeeldfoto van een gerecht',
     unitSectionTitle: 'Maateenheden',
     autoConvertNote: (other) => `Wordt automatisch omgerekend naar ${other}`,
     qtyLabel: 'Aantal',
@@ -1125,6 +1133,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Vandaag',
     todayBtn: 'Vandaag',
     noMealsScheduledDay: 'Geen gangen gepland',
+    noMealsUpcomingDays: 'Geen gerechten gepland voor de komende 7 dagen.',
     addToCalendarBtn: 'Op kalender zetten',
     addToCalendarDateLabel: 'Kies datum',
     confirmAddToCalendarBtn: 'Opslaan',
@@ -1214,9 +1223,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Cuisson',
     stepsWord: 'étapes',
     personsLabel: 'Personnes',
+    personsAndIngredients: 'Personnes & Ingrédients',
+    ingredientsShortWord: 'ingrédients',
     decreasePersonsAria: 'Réduire le nombre de personnes',
     increasePersonsAria: 'Augmenter le nombre de personnes',
-    openBookSpread: 'Ouvrir la Double Page',
+    openBookSpread: 'Préparation',
     prepClipShort: 'Clip Geste',
     cookAndTime: 'Cuisiner & Chronos',
 
@@ -1495,6 +1506,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Aujourd’hui',
     todayBtn: 'Aujourd’hui',
     noMealsScheduledDay: 'Aucun plat planifié',
+    noMealsUpcomingDays: 'Aucun plat prévu pour les 7 prochains jours.',
     addToCalendarBtn: 'Ajouter au calendrier',
     addToCalendarDateLabel: 'Date prévue',
     confirmAddToCalendarBtn: 'Enregistrer',
@@ -1584,9 +1596,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Cocción',
     stepsWord: 'pasos',
     personsLabel: 'Personas',
+    personsAndIngredients: 'Personas e Ingredientes',
+    ingredientsShortWord: 'ingredientes',
     decreasePersonsAria: 'Reducir personas',
     increasePersonsAria: 'Aumentar personas',
-    openBookSpread: 'Abrir Libro',
+    openBookSpread: 'Preparación',
     prepClipShort: 'Clip Técnica',
     cookAndTime: 'Cocinar y Medir',
 
@@ -1865,6 +1879,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Hoy',
     todayBtn: 'Hoy',
     noMealsScheduledDay: 'Sin platos programados',
+    noMealsUpcomingDays: 'No hay platos programados para los próximos 7 días.',
     addToCalendarBtn: 'Añadir al calendario',
     addToCalendarDateLabel: 'Fecha',
     confirmAddToCalendarBtn: 'Guardar',
@@ -1954,9 +1969,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Kochen',
     stepsWord: 'Schritte',
     personsLabel: 'Personen',
+    personsAndIngredients: 'Personen & Zutaten',
+    ingredientsShortWord: 'Zutaten',
     decreasePersonsAria: 'Personenzahl verringern',
     increasePersonsAria: 'Personenzahl erhöhen',
-    openBookSpread: 'Buchseite öffnen',
+    openBookSpread: 'Zubereitung',
     prepClipShort: 'Technikclip',
     cookAndTime: 'Kochen & Timer',
 
@@ -2235,6 +2252,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Heute',
     todayBtn: 'Heute',
     noMealsScheduledDay: 'Keine Gänge geplant',
+    noMealsUpcomingDays: 'Für die nächsten 7 Tage sind keine Gerichte geplant.',
     addToCalendarBtn: 'Zum Kalender',
     addToCalendarDateLabel: 'Datum wählen',
     confirmAddToCalendarBtn: 'Speichern',
@@ -2324,9 +2342,11 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     cookWord: 'Cottura',
     stepsWord: 'passaggi',
     personsLabel: 'Persone',
+    personsAndIngredients: 'Persone e Ingredienti',
+    ingredientsShortWord: 'ingredienti',
     decreasePersonsAria: 'Riduci persone',
     increasePersonsAria: 'Aumenta persone',
-    openBookSpread: 'Apri Doppia Pagina',
+    openBookSpread: 'Preparazione',
     prepClipShort: 'Clip Tecnica',
     cookAndTime: 'Cucina & Timer',
 
@@ -2605,6 +2625,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     todayLabel: 'Oggi',
     todayBtn: 'Oggi',
     noMealsScheduledDay: 'Nessuna portata programmata',
+    noMealsUpcomingDays: 'Nessun piatto in programma per i prossimi 7 giorni.',
     addToCalendarBtn: 'Aggiungi al calendario',
     addToCalendarDateLabel: 'Scegli data',
     confirmAddToCalendarBtn: 'Salva',
@@ -2837,7 +2858,7 @@ export const CHAPTERS_I18N: Record<LanguageCode, Chapter[]> = {
     {
       id: 'breakfast',
       title: 'Ontbijt',
-      seasonNote: 'Ochtendtafel · Eieren, Gebak & Plaat',
+      seasonNote: 'Ochtendtafel · Eieren, Gebak & Bakplaat',
       epigraph: 'Zonnige ochtendgerechten, luchtige omeletten, warme brioche en café-au-lait.',
       sortOrder: 0,
     },
@@ -2845,7 +2866,7 @@ export const CHAPTERS_I18N: Record<LanguageCode, Chapter[]> = {
       id: 'lunch',
       title: 'Lunch',
       seasonNote: 'Middagbistro · Tartines, Salades & Kommen',
-      epigraph: 'Knapperige marktsla, hartige galettes, warme bouillons en lichte middagplaten.',
+      epigraph: 'Knapperige marktsla, hartige galettes, warme bouillons en lichte middaggerechten.',
       sortOrder: 1,
     },
     {

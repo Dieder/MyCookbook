@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
+  UtensilsCrossed,
   X,
 } from 'lucide-react';
 import { UI_STRINGS } from '../i18n/translations';
@@ -33,6 +34,43 @@ interface CalendarPageProps {
   onSignIn: () => void;
   onGoToSettings: () => void;
   lang: LanguageCode;
+}
+
+interface CalendarDishThumbProps {
+  src?: string;
+  alt: string;
+  sizeClass: string;
+  onClick: () => void;
+}
+
+function CalendarDishThumb({
+  src,
+  alt,
+  sizeClass,
+  onClick,
+}: CalendarDishThumbProps) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={alt}
+      className={`${sizeClass} border border-[var(--border-line)] bg-[var(--bg-elevated)] overflow-hidden shrink-0 cursor-pointer flex items-center justify-center`}
+    >
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <UtensilsCrossed className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+      )}
+    </button>
+  );
 }
 
 export function CalendarPage({
@@ -99,6 +137,14 @@ export function CalendarPage({
     });
   }, [today, locale]);
 
+  const scheduledUpcomingDays = useMemo(
+    () =>
+      nextSevenDays.filter(
+        (day) => (entriesByDate.get(day.dateKey)?.length ?? 0) > 0
+      ),
+    [nextSevenDays, entriesByDate]
+  );
+
   const monthCells = useMemo(
     () => buildMonthGrid(displayYear, displayMonth),
     [displayYear, displayMonth]
@@ -144,6 +190,7 @@ export function CalendarPage({
       title: matchedRecipe?.title ?? entry.recipeTitle,
       courseId,
       courseTitle: courseChapter?.title ?? courseId,
+      heroImage: matchedRecipe?.heroImage,
     };
   };
 
@@ -194,7 +241,7 @@ export function CalendarPage({
         </section>
       )}
 
-      {/* SECTION 1: NEXT 7 DAYS */}
+      {/* SECTION 1: NEXT 7 DAYS (only days with dishes) */}
       <section className="space-y-5">
         <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
           <h2 className="font-display text-2xl text-[var(--text-ink)]">
@@ -205,67 +252,77 @@ export function CalendarPage({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {nextSevenDays.map((day) => {
-            const dayEntries = entriesByDate.get(day.dateKey) ?? [];
+        {scheduledUpcomingDays.length === 0 ? (
+          <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-6">
+            <p className="text-sm font-serif italic text-[var(--text-muted)]">
+              {t.noMealsUpcomingDays}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {scheduledUpcomingDays.map((day) => {
+              const dayEntries = entriesByDate.get(day.dateKey) ?? [];
 
-            return (
-              <article
-                key={day.dateKey}
-                className={`border p-4 flex flex-col justify-between gap-4 transition-colors ${
-                  day.isToday
-                    ? 'bg-[var(--bg-surface)] border-[var(--accent-primary)]'
-                    : 'bg-[var(--bg-paper)] border-[var(--border-line)]'
-                }`}
-              >
-                <div className="space-y-3">
-                  {/* Day Header */}
-                  <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-[var(--border-subtle)]">
-                    <div>
-                      <p className="font-display text-lg text-[var(--text-ink)] capitalize leading-tight">
-                        {day.weekdayLabel}
-                      </p>
-                      <p className="text-xs font-mono text-[var(--text-muted)] tabular-nums mt-0.5">
-                        {day.dateLabel}
-                      </p>
+              return (
+                <article
+                  key={day.dateKey}
+                  className={`border p-4 flex flex-col justify-between gap-4 transition-colors ${
+                    day.isToday
+                      ? 'bg-[var(--bg-surface)] border-[var(--accent-primary)]'
+                      : 'bg-[var(--bg-paper)] border-[var(--border-line)]'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    {/* Day Header */}
+                    <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-[var(--border-subtle)]">
+                      <div>
+                        <p className="font-display text-lg text-[var(--text-ink)] capitalize leading-tight">
+                          {day.weekdayLabel}
+                        </p>
+                        <p className="text-xs font-mono text-[var(--text-muted)] tabular-nums mt-0.5">
+                          {day.dateLabel}
+                        </p>
+                      </div>
+
+                      {day.isToday && (
+                        <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-primary)] font-medium shrink-0">
+                          {t.todayLabel}
+                        </span>
+                      )}
                     </div>
 
-                    {day.isToday && (
-                      <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-primary)] font-medium shrink-0">
-                        {t.todayLabel}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Scheduled Courses */}
-                  {dayEntries.length === 0 ? (
-                    <p className="text-xs font-serif italic text-[var(--text-muted)]/80 py-1">
-                      {t.noMealsScheduledDay}
-                    </p>
-                  ) : (
+                    {/* Scheduled Courses with Thumbnails */}
                     <ul className="space-y-2.5">
                       {dayEntries.map((entry) => {
                         const info = renderCourseLink(entry);
                         return (
                           <li
                             key={entry.id}
-                            className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-2 flex items-start justify-between gap-2"
+                            className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2.5 flex items-start justify-between gap-2.5"
                           >
-                            <div className="min-w-0 space-y-0.5">
-                              <button
-                                type="button"
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <CalendarDishThumb
+                                src={info.heroImage}
+                                alt={info.title}
+                                sizeClass="w-12 h-12"
                                 onClick={() => onSelectRecipe(entry.recipeId)}
-                                className="block text-left font-serif text-sm font-medium text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer leading-snug"
-                              >
-                                {info.title}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onSelectChapter(info.courseId)}
-                                className="block text-left text-[11px] font-mono text-[var(--accent-secondary)] hover:underline cursor-pointer"
-                              >
-                                {info.courseTitle}
-                              </button>
+                              />
+                              <div className="min-w-0 space-y-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectRecipe(entry.recipeId)}
+                                  className="block text-left font-serif text-sm font-medium text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer leading-snug"
+                                >
+                                  {info.title}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectChapter(info.courseId)}
+                                  className="block text-left text-[11px] font-mono text-[var(--accent-secondary)] hover:underline cursor-pointer"
+                                >
+                                  {info.courseTitle}
+                                </button>
+                              </div>
                             </div>
                             <button
                               type="button"
@@ -280,16 +337,16 @@ export function CalendarPage({
                         );
                       })}
                     </ul>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
-      {/* SECTION 2: MONTHLY CALENDAR VIEW */}
-      <section className="space-y-5 pt-4 border-t border-[var(--border-line)]">
+      {/* SECTION 2: MONTHLY CALENDAR VIEW (tablet/desktop only) */}
+      <section className="hidden md:block space-y-5 pt-4 border-t border-[var(--border-line)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
@@ -385,16 +442,24 @@ export function CalendarPage({
                         return (
                           <div
                             key={entry.id}
-                            className="border border-[var(--border-line)] bg-[var(--bg-surface)] px-2 py-1 space-y-0.5 group"
+                            className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-1.5 space-y-1 group"
                           >
-                            <div className="flex items-start justify-between gap-1">
-                              <button
-                                type="button"
-                                onClick={() => onSelectRecipe(entry.recipeId)}
-                                className="text-left font-serif text-[12px] leading-tight text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer line-clamp-2"
-                              >
-                                {info.title}
-                              </button>
+                            <div className="flex items-start justify-between gap-1.5">
+                              <div className="flex items-start gap-1.5 min-w-0">
+                                <CalendarDishThumb
+                                  src={info.heroImage}
+                                  alt={info.title}
+                                  sizeClass="w-8 h-8"
+                                  onClick={() => onSelectRecipe(entry.recipeId)}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectRecipe(entry.recipeId)}
+                                  className="text-left font-serif text-[12px] leading-tight text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer line-clamp-2 min-w-0"
+                                >
+                                  {info.title}
+                                </button>
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => void onRemoveEntry(entry.id)}

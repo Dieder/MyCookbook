@@ -35,6 +35,7 @@ import {
 import {
   isValidOptionalYouTubeUrl,
   normalizeOptionalYouTubeUrl,
+  toYouTubeEmbedUrl,
 } from '../utils/youtube';
 import { splitStoryIntoParagraphs, stripStoryMarkup } from '../utils/storyMarkup';
 import { EditorialPlateImage } from './EditorialPlateImage';
@@ -411,7 +412,9 @@ export function RecipeEditorPage({
           ).slice(0, 360),
           chefAuthor: (defaultChefAuthor.trim() || 'Maison Feuille Contributor').slice(0, 100),
           ingredients: validIngredients,
-          techniques: recipe?.techniques ?? [],
+          techniques: (recipe?.techniques ?? []).filter((clip) =>
+            Boolean(toYouTubeEmbedUrl(clip.videoUrl))
+          ),
           steps: validSteps,
           sourceType: recipe?.sourceType ?? 'contributor',
           status: targetStatus,

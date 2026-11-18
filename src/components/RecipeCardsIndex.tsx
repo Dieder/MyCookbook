@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bookmark, ChevronLeft, ChevronRight, Clock, PlayCircle, Search, Sparkles, Users, Utensils } from 'lucide-react';
+import {
+  Bookmark,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Clock,
+  PlayCircle,
+  Search,
+  Sparkles,
+  Users,
+  Utensils,
+} from 'lucide-react';
 import {
   formatPersonLabel,
   UI_STRINGS,
@@ -18,7 +30,6 @@ interface RecipeCardsIndexProps {
   favoriteIds: string[];
   onToggleFavorite: (recipeId: string) => void;
   unitSystem: UnitSystem;
-  onChangeUnitSystem: (unit: UnitSystem) => void;
   servingsMap: Record<string, number>;
   onChangeServings: (recipeId: string, servings: number) => void;
   lang: LanguageCode;
@@ -42,7 +53,6 @@ export function RecipeCardsIndex({
   favoriteIds,
   onToggleFavorite,
   unitSystem,
-  onChangeUnitSystem,
   servingsMap,
   onChangeServings,
   lang,
@@ -50,7 +60,20 @@ export function RecipeCardsIndex({
   const [compactChapter, setCompactChapter] = useState<string>('all');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [expandedCardIds, setExpandedCardIds] = useState<Set<string>>(() => new Set());
   const t = UI_STRINGS[lang];
+
+  const toggleCardIngredients = (recipeId: string) => {
+    setExpandedCardIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(recipeId)) {
+        next.delete(recipeId);
+      } else {
+        next.add(recipeId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     setPage(1);
@@ -132,30 +155,6 @@ export function RecipeCardsIndex({
               className="w-full pl-8 pr-3 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-line)] text-xs font-serif text-[var(--text-ink)] placeholder:text-[var(--text-muted)]/70 focus:outline-none focus:border-[var(--accent-primary)]"
             />
           </div>
-          <div className="inline-flex border border-[var(--border-line)] bg-[var(--bg-surface)]">
-            <button
-              type="button"
-              onClick={() => onChangeUnitSystem('metric')}
-              className={`px-3 py-1.5 text-xs font-mono cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
-                unitSystem === 'metric'
-                  ? 'bg-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-              }`}
-            >
-              {t.metricFull}
-            </button>
-            <button
-              type="button"
-              onClick={() => onChangeUnitSystem('imperial')}
-              className={`px-3 py-1.5 text-xs font-mono cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
-                unitSystem === 'imperial'
-                  ? 'bg-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-              }`}
-            >
-              {t.usCustomaryFull}
-            </button>
-          </div>
 
           <select
             value={compactChapter}
@@ -217,6 +216,7 @@ export function RecipeCardsIndex({
           const currentServings = servingsMap[recipe.id] ?? recipe.baseServings;
           const multiplier = currentServings / recipe.baseServings;
           const isSaved = favoriteIds.includes(recipe.id);
+          const isExpanded = expandedCardIds.has(recipe.id);
 
           return (
             <article
@@ -269,76 +269,108 @@ export function RecipeCardsIndex({
                   </button>
                 </div>
 
-                {/* Person Count Selector Strip */}
-                <div className="px-6 py-3 bg-[var(--bg-elevated)]/60 border-b border-[var(--border-line)] flex items-center justify-between gap-4">
-                  <span className="text-xs font-mono text-[var(--text-muted)] inline-flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
-                    {t.personsLabel}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChangeServings(recipe.id, Math.max(1, currentServings - 1))
-                      }
-                      aria-label={t.decreasePersonsAria}
-                      className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
-                    >
-                      −
-                    </button>
-                    <select
-                      value={currentServings}
-                      onChange={(e) =>
-                        onChangeServings(recipe.id, Number(e.target.value))
-                      }
-                      aria-label={`${t.personCountLabel}: ${recipe.title}`}
-                      className="h-7 px-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] tabular-nums focus:outline-none focus:border-[var(--accent-primary)]"
-                    >
-                      {Array.from(
-                        new Set([1, 2, 3, 4, 5, 6, 8, 10, 12, currentServings])
-                      )
-                        .sort((a, b) => a - b)
-                        .map((count) => (
-                          <option key={count} value={count}>
-                            {count} {formatPersonLabel(count, lang)}
-                          </option>
-                        ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChangeServings(recipe.id, Math.min(24, currentServings + 1))
-                      }
-                      aria-label={t.increasePersonsAria}
-                      className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
+                {/* Collapsible Persons & Ingredients Panel (closed by default) */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => toggleCardIngredients(recipe.id)}
+                    aria-expanded={isExpanded}
+                    className={`w-full px-6 py-3 flex items-center justify-between gap-4 text-left cursor-pointer transition-colors hover:bg-[var(--bg-elevated)]/60 ${
+                      isExpanded ? 'border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/40' : ''
+                    }`}
+                  >
+                    <span className="text-xs font-mono text-[var(--text-ink)] inline-flex items-center gap-2">
+                      <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)] shrink-0" />
+                      <span className="hidden md:inline">{t.personsAndIngredients}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-2 text-xs font-mono text-[var(--text-muted)] tabular-nums shrink-0">
+                      <span>
+                        {currentServings} {formatPersonLabel(currentServings, lang)} ·{' '}
+                        {recipe.ingredients.length} {t.ingredientsShortWord}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-[var(--text-ink)]" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-[var(--text-ink)]" />
+                      )}
+                    </span>
+                  </button>
 
-                {/* Ruled Ingredient Ledger */}
-                <ul className="px-6 py-4 divide-y divide-[var(--border-subtle)]">
-                  {recipe.ingredients.map((ing) => {
-                    const baseAmt =
-                      unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
-                    const unit =
-                      unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
-                    const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit);
-
-                    return (
-                      <li
-                        key={ing.id}
-                        className="py-2 flex items-baseline justify-between gap-4 text-sm font-serif"
-                      >
-                        <span className="text-[var(--text-ink)]">{ing.name}</span>
-                        <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
-                          {formatted} {unit}
+                  {isExpanded && (
+                    <div>
+                      {/* Person Count Selector Strip */}
+                      <div className="px-6 py-3 bg-[var(--bg-elevated)]/60 border-b border-[var(--border-line)] flex items-center justify-between gap-4">
+                        <span className="text-xs font-mono text-[var(--text-muted)] inline-flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                          {t.personsLabel}
                         </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onChangeServings(recipe.id, Math.max(1, currentServings - 1))
+                            }
+                            aria-label={t.decreasePersonsAria}
+                            className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
+                          >
+                            −
+                          </button>
+                          <select
+                            value={currentServings}
+                            onChange={(e) =>
+                              onChangeServings(recipe.id, Number(e.target.value))
+                            }
+                            aria-label={`${t.personCountLabel}: ${recipe.title}`}
+                            className="h-7 px-2 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--text-ink)] tabular-nums focus:outline-none focus:border-[var(--accent-primary)]"
+                          >
+                            {Array.from(
+                              new Set([1, 2, 3, 4, 5, 6, 8, 10, 12, currentServings])
+                            )
+                              .sort((a, b) => a - b)
+                              .map((count) => (
+                                <option key={count} value={count}>
+                                  {count} {formatPersonLabel(count, lang)}
+                                </option>
+                              ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onChangeServings(recipe.id, Math.min(24, currentServings + 1))
+                            }
+                            aria-label={t.increasePersonsAria}
+                            className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-paper)] text-xs font-mono hover:bg-[var(--bg-elevated)] cursor-pointer"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Ruled Ingredient Ledger */}
+                      <ul className="px-6 py-4 divide-y divide-[var(--border-subtle)]">
+                        {recipe.ingredients.map((ing) => {
+                          const baseAmt =
+                            unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
+                          const unit =
+                            unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
+                          const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit);
+
+                          return (
+                            <li
+                              key={ing.id}
+                              className="py-2 flex items-baseline justify-between gap-4 text-sm font-serif"
+                            >
+                              <span className="text-[var(--text-ink)]">{ing.name}</span>
+                              <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
+                                {formatted} {unit}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Card Action Footer */}
