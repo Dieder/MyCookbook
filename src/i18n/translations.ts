@@ -416,6 +416,58 @@ export interface UIStrings {
   aiErrNetwork: string;
   aiErrSaveFailed: string;
   aiErrGeneric: string;
+
+  // Meal Slots, Quick Swap, Smart Shopping List & Offline PWA
+  navShopping: string;
+  mealSlotLabel: string;
+  slotBreakfast: string;
+  slotLunch: string;
+  slotDinner: string;
+  slotSnack: string;
+  planMealBtn: string;
+  swapDishBtn: string;
+  swapDishTitle: string;
+  planMealTitle: string;
+  searchDishPlaceholder: string;
+  selectDishHint: string;
+  viewShoppingListBtn: string;
+  calendarSwappedToast: string;
+  plannedDishesCount: (count: number) => string;
+
+  shoppingEyebrow: string;
+  shoppingTitle: string;
+  shoppingSubtitle: string;
+  shoppingWindow7d: string;
+  shoppingWindow14d: string;
+  shoppingWindowMonth: string;
+  shoppingHideChecked: string;
+  shoppingShowChecked: string;
+  shoppingUncheckAll: string;
+  shoppingCopyList: string;
+  shoppingCopiedToast: string;
+  shoppingEmptyTitle: string;
+  shoppingEmptyHint: string;
+  shoppingOpenCalendarBtn: string;
+  shoppingProgress: (checked: number, total: number) => string;
+  shoppingSourceSummary: (mealsCount: number) => string;
+  catProduce: string;
+  catMeatFish: string;
+  catDairy: string;
+  catBakery: string;
+  catPantry: string;
+  catOther: string;
+
+  offlineBannerText: string;
+  pwaSectionTitle: string;
+  pwaSectionDesc: string;
+  pwaInstallBtn: string;
+  pwaInstallIOSBtn: string;
+  pwaInstalledBadge: string;
+  pwaAvailableHint: string;
+  pwaIOSGuideTitle: string;
+  pwaIOSGuideStep1: string;
+  pwaIOSGuideStep2: string;
+  pwaCloseBtn: string;
 }
 
 export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
@@ -790,6 +842,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'Unable to reach the recipe assistant right now. Please check your connection and try again.',
     aiErrSaveFailed: 'Your recipe was composed, but saving it to your cookbook failed. Please check your permissions and try again.',
     aiErrGeneric: 'Something went wrong while preparing your recipe. Please try again shortly.',
+
+    navShopping: 'Shopping',
+    mealSlotLabel: 'Meal Slot',
+    slotBreakfast: 'Breakfast',
+    slotLunch: 'Lunch',
+    slotDinner: 'Dinner',
+    slotSnack: 'Snack',
+    planMealBtn: 'Plan Meal',
+    swapDishBtn: 'Swap dish',
+    swapDishTitle: 'Swap Dish on Calendar',
+    planMealTitle: 'Schedule Dish to Slot',
+    searchDishPlaceholder: 'Search dishes or ingredients...',
+    selectDishHint: 'Pick a dish to place into this calendar slot.',
+    viewShoppingListBtn: 'Shopping List',
+    calendarSwappedToast: 'Dish swapped on calendar.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'dish' : 'dishes'}`,
+
+    shoppingEyebrow: 'Calendar Grocery Folio',
+    shoppingTitle: 'Smart Shopping List',
+    shoppingSubtitle: 'Automatically compiled and scaled from your planned meal calendar days.',
+    shoppingWindow7d: 'Next 7 Days',
+    shoppingWindow14d: 'Next 14 Days',
+    shoppingWindowMonth: 'This Month',
+    shoppingHideChecked: 'Hide Checked',
+    shoppingShowChecked: 'Show All',
+    shoppingUncheckAll: 'Uncheck All',
+    shoppingCopyList: 'Copy List',
+    shoppingCopiedToast: 'Shopping list copied to clipboard.',
+    shoppingEmptyTitle: 'No planned meals in this window',
+    shoppingEmptyHint: 'Schedule dishes onto your meal calendar to auto-compile scaled ingredients here.',
+    shoppingOpenCalendarBtn: 'Open Meal Calendar',
+    shoppingProgress: (checked, total) => `${checked} / ${total} checked`,
+    shoppingSourceSummary: (mealsCount) => `From ${mealsCount} planned ${mealsCount === 1 ? 'meal' : 'meals'}`,
+    catProduce: 'Produce & Herbs',
+    catMeatFish: 'Butchery & Fish',
+    catDairy: 'Dairy & Eggs',
+    catBakery: 'Bakery & Grains',
+    catPantry: 'Pantry & Spices',
+    catOther: 'Other',
+
+    offlineBannerText: 'Offline Kitchen Mode — cached recipes, calendar, and timers remain available.',
+    pwaSectionTitle: 'Offline Access & Home Screen',
+    pwaSectionDesc: 'Install Maison Feuille for full-screen cooking, cached recipe photos offline, and instant access from your home screen.',
+    pwaInstallBtn: 'Install App',
+    pwaInstallIOSBtn: 'Add to Home Screen',
+    pwaInstalledBadge: 'Installed on Device',
+    pwaAvailableHint: 'Offline mode active: curated recipes and recently viewed plates stay cached even without reception.',
+    pwaIOSGuideTitle: 'Add to iPhone / iPad Home Screen',
+    pwaIOSGuideStep1: 'Tap the Share button in the Safari toolbar.',
+    pwaIOSGuideStep2: 'Scroll down and tap “Add to Home Screen”.',
+    pwaCloseBtn: 'Close',
   },
 
   nl: {
@@ -1163,6 +1266,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'Kan de keukenassistent momenteel niet bereiken. Controleer de verbinding en probeer opnieuw.',
     aiErrSaveFailed: 'Het recept is opgesteld, maar opslaan in je kookboek is mislukt. Controleer je rechten en probeer opnieuw.',
     aiErrGeneric: 'Er is een technisch probleem opgetreden bij het maken van dit recept. Probeer het zo meteen opnieuw.',
+
+    navShopping: 'Boodschappen',
+    mealSlotLabel: 'Eetmoment',
+    slotBreakfast: 'Ontbijt',
+    slotLunch: 'Lunch',
+    slotDinner: 'Diner',
+    slotSnack: 'Tussendoor',
+    planMealBtn: 'Maaltijd plannen',
+    swapDishBtn: 'Gerecht wisselen',
+    swapDishTitle: 'Gerecht Wisselen op Kalender',
+    planMealTitle: 'Gerecht Inplannen',
+    searchDishPlaceholder: 'Zoek op gerecht of ingrediënt...',
+    selectDishHint: 'Kies een gerecht voor dit eetmoment.',
+    viewShoppingListBtn: 'Boodschappenlijst',
+    calendarSwappedToast: 'Gerecht gewisseld op de kalender.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'gerecht' : 'gerechten'}`,
+
+    shoppingEyebrow: 'Automatische Boodschappen',
+    shoppingTitle: 'Slimme Boodschappenlijst',
+    shoppingSubtitle: 'Automatisch samengesteld en geschaald op basis van je geplande kalenderdagen.',
+    shoppingWindow7d: 'Komende 7 dagen',
+    shoppingWindow14d: 'Komende 14 dagen',
+    shoppingWindowMonth: 'Deze maand',
+    shoppingHideChecked: 'Verberg afgevinkt',
+    shoppingShowChecked: 'Toon alles',
+    shoppingUncheckAll: 'Alles uitvinken',
+    shoppingCopyList: 'Kopieer lijst',
+    shoppingCopiedToast: 'Boodschappenlijst gekopieerd.',
+    shoppingEmptyTitle: 'Geen geplande maaltijden in deze periode',
+    shoppingEmptyHint: 'Plan gerechten in je maaltijdkalender om automatisch je boodschappenlijst te vullen.',
+    shoppingOpenCalendarBtn: 'Open Maaltijdkalender',
+    shoppingProgress: (checked, total) => `${checked} / ${total} afgevinkt`,
+    shoppingSourceSummary: (mealsCount) => `Uit ${mealsCount} geplande ${mealsCount === 1 ? 'maaltijd' : 'maaltijden'}`,
+    catProduce: 'Groente, Fruit & Kruiden',
+    catMeatFish: 'Vlees & Vis',
+    catDairy: 'Zuivel & Eieren',
+    catBakery: 'Bakkerij & Granen',
+    catPantry: 'Voorraadkast & Specerijen',
+    catOther: 'Overig',
+
+    offlineBannerText: 'Offline Keukenmodus — bewaarde recepten, kalender en timers blijven werken.',
+    pwaSectionTitle: 'Offline Gebruik & Beginscherm',
+    pwaSectionDesc: 'Installeer Maison Feuille op je beginscherm voor volledig scherm, offline receptfoto’s en snelle toegang in de keuken.',
+    pwaInstallBtn: 'App Installeren',
+    pwaInstallIOSBtn: 'Zet op Beginscherm',
+    pwaInstalledBadge: 'Geïnstalleerd op Apparaat',
+    pwaAvailableHint: 'Offline ondersteuning actief: recepten en foto’s blijven ook zonder bereik beschikbaar.',
+    pwaIOSGuideTitle: 'Zet op iPhone / iPad Beginscherm',
+    pwaIOSGuideStep1: 'Tik op de Deel-knop onderaan in Safari.',
+    pwaIOSGuideStep2: 'Scrol omlaag en tik op “Zet op beginscherm”.',
+    pwaCloseBtn: 'Sluiten',
   },
 
   fr: {
@@ -1536,6 +1690,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'Impossible de joindre l’assistant culinaire pour le moment. Vérifiez votre connexion.',
     aiErrSaveFailed: 'La recette a été préparée, mais son enregistrement a échoué. Vérifiez vos droits d’accès.',
     aiErrGeneric: 'Une erreur technique est survenue lors de la préparation de cette recette. Veuillez réessayer.',
+
+    navShopping: 'Courses',
+    mealSlotLabel: 'Moment du repas',
+    slotBreakfast: 'Petit-déjeuner',
+    slotLunch: 'Déjeuner',
+    slotDinner: 'Dîner',
+    slotSnack: 'Collation',
+    planMealBtn: 'Planifier un plat',
+    swapDishBtn: 'Remplacer le plat',
+    swapDishTitle: 'Remplacer au Calendrier',
+    planMealTitle: 'Planifier un Plat',
+    searchDishPlaceholder: 'Rechercher un plat ou ingrédient...',
+    selectDishHint: 'Choisissez un plat pour ce créneau.',
+    viewShoppingListBtn: 'Liste de courses',
+    calendarSwappedToast: 'Plat remplacé dans le calendrier.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'plat' : 'plats'}`,
+
+    shoppingEyebrow: 'Courses du Calendrier',
+    shoppingTitle: 'Liste de Courses Intelligente',
+    shoppingSubtitle: 'Compilée et ajustée automatiquement selon vos repas planifiés.',
+    shoppingWindow7d: '7 prochains jours',
+    shoppingWindow14d: '14 prochains jours',
+    shoppingWindowMonth: 'Ce mois-ci',
+    shoppingHideChecked: 'Masquer cochés',
+    shoppingShowChecked: 'Tout afficher',
+    shoppingUncheckAll: 'Tout décocher',
+    shoppingCopyList: 'Copier la liste',
+    shoppingCopiedToast: 'Liste copiée dans le presse-papiers.',
+    shoppingEmptyTitle: 'Aucun repas planifié sur cette période',
+    shoppingEmptyHint: 'Ajoutez des plats au calendrier pour générer automatiquement votre liste de courses.',
+    shoppingOpenCalendarBtn: 'Ouvrir le Calendrier',
+    shoppingProgress: (checked, total) => `${checked} / ${total} cochés`,
+    shoppingSourceSummary: (mealsCount) => `D’après ${mealsCount} ${mealsCount === 1 ? 'repas planifié' : 'repas planifiés'}`,
+    catProduce: 'Fruits, Légumes & Herbes',
+    catMeatFish: 'Boucherie & Poissonnerie',
+    catDairy: 'Crèmerie & Œufs',
+    catBakery: 'Boulangerie & Céréales',
+    catPantry: 'Épicerie & Épices',
+    catOther: 'Autres',
+
+    offlineBannerText: 'Mode Cuisine Hors Ligne — recettes, calendrier et minuteurs restent disponibles.',
+    pwaSectionTitle: 'Accès Hors Ligne & Écran d’accueil',
+    pwaSectionDesc: 'Installez Maison Feuille sur votre appareil pour cuisiner hors connexion et y accéder depuis l’écran d’accueil.',
+    pwaInstallBtn: 'Installer l’app',
+    pwaInstallIOSBtn: 'Sur l’écran d’accueil',
+    pwaInstalledBadge: 'Installée sur l’appareil',
+    pwaAvailableHint: 'Cache hors ligne actif : vos recettes et photos restent accessibles sans réseau.',
+    pwaIOSGuideTitle: 'Ajouter sur iPhone / iPad',
+    pwaIOSGuideStep1: 'Touchez le bouton Partager dans la barre Safari.',
+    pwaIOSGuideStep2: 'Faites défiler et touchez « Sur l’écran d’accueil ».',
+    pwaCloseBtn: 'Fermer',
   },
 
   es: {
@@ -1909,6 +2114,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'No se pudo conectar con el asistente culinario en este momento. Revisa tu conexión.',
     aiErrSaveFailed: 'La receta se generó, pero no se pudo guardar en tu recetario. Revisa tus permisos e inténtalo de nuevo.',
     aiErrGeneric: 'Ocurrió un problema técnico al preparar la receta. Inténtalo de nuevo en unos instantes.',
+
+    navShopping: 'Compras',
+    mealSlotLabel: 'Turno de comida',
+    slotBreakfast: 'Desayuno',
+    slotLunch: 'Almuerzo',
+    slotDinner: 'Cena',
+    slotSnack: 'Merienda',
+    planMealBtn: 'Planificar plato',
+    swapDishBtn: 'Cambiar plato',
+    swapDishTitle: 'Cambiar Plato del Calendario',
+    planMealTitle: 'Programar Plato',
+    searchDishPlaceholder: 'Buscar plato o ingrediente...',
+    selectDishHint: 'Elige un plato para este turno.',
+    viewShoppingListBtn: 'Lista de compras',
+    calendarSwappedToast: 'Plato actualizado en el calendario.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'plato' : 'platos'}`,
+
+    shoppingEyebrow: 'Compras del Calendario',
+    shoppingTitle: 'Lista de Compras Inteligente',
+    shoppingSubtitle: 'Compilada y escalada automáticamente desde tus días planificados.',
+    shoppingWindow7d: 'Próximos 7 días',
+    shoppingWindow14d: 'Próximos 14 días',
+    shoppingWindowMonth: 'Este mes',
+    shoppingHideChecked: 'Ocultar marcados',
+    shoppingShowChecked: 'Mostrar todo',
+    shoppingUncheckAll: 'Desmarcar todo',
+    shoppingCopyList: 'Copiar lista',
+    shoppingCopiedToast: 'Lista copiada al portapapeles.',
+    shoppingEmptyTitle: 'Sin comidas planificadas en este periodo',
+    shoppingEmptyHint: 'Programa platos en el calendario para generar tus ingredientes automáticamente.',
+    shoppingOpenCalendarBtn: 'Abrir Calendario',
+    shoppingProgress: (checked, total) => `${checked} / ${total} listos`,
+    shoppingSourceSummary: (mealsCount) => `De ${mealsCount} ${mealsCount === 1 ? 'comida planificada' : 'comidas planificadas'}`,
+    catProduce: 'Frutas, Verduras y Hierbas',
+    catMeatFish: 'Carnes y Pescados',
+    catDairy: 'Lácteos y Huevos',
+    catBakery: 'Panadería y Granos',
+    catPantry: 'Despensa y Especias',
+    catOther: 'Otros',
+
+    offlineBannerText: 'Modo Cocina Sin Conexión — recetas, calendario y temporizadores siguen activos.',
+    pwaSectionTitle: 'Modo Sin Conexión e Instalación',
+    pwaSectionDesc: 'Instala Maison Feuille en tu pantalla de inicio para cocinar sin conexión con acceso inmediato.',
+    pwaInstallBtn: 'Instalar App',
+    pwaInstallIOSBtn: 'Añadir a Inicio',
+    pwaInstalledBadge: 'Instalada en el dispositivo',
+    pwaAvailableHint: 'Caché sin conexión activa: recetas y fotos permanecen disponibles sin cobertura.',
+    pwaIOSGuideTitle: 'Añadir a iPhone / iPad',
+    pwaIOSGuideStep1: 'Pulsa el botón Compartir en la barra de Safari.',
+    pwaIOSGuideStep2: 'Desliza y selecciona «Añadir a pantalla de inicio».',
+    pwaCloseBtn: 'Cerrar',
   },
 
   de: {
@@ -2282,6 +2538,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'Der Küchenassistent ist derzeit nicht erreichbar. Bitte prüfe deine Verbindung.',
     aiErrSaveFailed: 'Das Rezept wurde erstellt, konnte aber nicht gespeichert werden. Bitte prüfe deine Berechtigungen.',
     aiErrGeneric: 'Beim Erstellen des Rezepts ist ein technischer Fehler aufgetreten. Bitte versuche es gleich noch einmal.',
+
+    navShopping: 'Einkauf',
+    mealSlotLabel: 'Mahlzeit',
+    slotBreakfast: 'Frühstück',
+    slotLunch: 'Mittagessen',
+    slotDinner: 'Abendessen',
+    slotSnack: 'Snack',
+    planMealBtn: 'Gericht planen',
+    swapDishBtn: 'Gericht tauschen',
+    swapDishTitle: 'Gericht im Kalender tauschen',
+    planMealTitle: 'Gericht einplanen',
+    searchDishPlaceholder: 'Gericht oder Zutat suchen...',
+    selectDishHint: 'Wähle ein Gericht für diesen Slot.',
+    viewShoppingListBtn: 'Einkaufsliste',
+    calendarSwappedToast: 'Gericht im Kalender getauscht.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'Gericht' : 'Gerichte'}`,
+
+    shoppingEyebrow: 'Kalender-Einkaufsliste',
+    shoppingTitle: 'Smarte Einkaufsliste',
+    shoppingSubtitle: 'Automatisch aus deinen geplanten Kalendertagen zusammengestellt und skaliert.',
+    shoppingWindow7d: 'Nächste 7 Tage',
+    shoppingWindow14d: 'Nächste 14 Tage',
+    shoppingWindowMonth: 'Dieser Monat',
+    shoppingHideChecked: 'Erledigte ausblenden',
+    shoppingShowChecked: 'Alle zeigen',
+    shoppingUncheckAll: 'Alle abwählen',
+    shoppingCopyList: 'Liste kopieren',
+    shoppingCopiedToast: 'Einkaufsliste kopiert.',
+    shoppingEmptyTitle: 'Keine geplanten Gerichte in diesem Zeitraum',
+    shoppingEmptyHint: 'Plane Gerichte im Kalender, um hier automatisch deine Einkaufsliste zu erzeugen.',
+    shoppingOpenCalendarBtn: 'Kalender öffnen',
+    shoppingProgress: (checked, total) => `${checked} / ${total} erledigt`,
+    shoppingSourceSummary: (mealsCount) => `Aus ${mealsCount} geplanten ${mealsCount === 1 ? 'Mahlzeit' : 'Mahlzeiten'}`,
+    catProduce: 'Obst, Gemüse & Kräuter',
+    catMeatFish: 'Fleisch & Fisch',
+    catDairy: 'Milchprodukte & Eier',
+    catBakery: 'Bäckerei & Getreide',
+    catPantry: 'Vorrat & Gewürze',
+    catOther: 'Sonstiges',
+
+    offlineBannerText: 'Offline-Küchenmodus — Rezepte, Kalender und Timer bleiben verfügbar.',
+    pwaSectionTitle: 'Offline-Modus & Startbildschirm',
+    pwaSectionDesc: 'Installiere Maison Feuille auf deinem Gerät für Offline-Zugriff in der Küche und Vollbildmodus.',
+    pwaInstallBtn: 'App installieren',
+    pwaInstallIOSBtn: 'Zum Home-Bildschirm',
+    pwaInstalledBadge: 'Auf Gerät installiert',
+    pwaAvailableHint: 'Offline-Cache aktiv: Rezepte und Fotos bleiben auch ohne Empfang abrufbar.',
+    pwaIOSGuideTitle: 'Auf iPhone / iPad hinzufügen',
+    pwaIOSGuideStep1: 'Tippe auf das Teilen-Symbol in der Safari-Leiste.',
+    pwaIOSGuideStep2: 'Wähle „Zum Home-Bildschirm“.',
+    pwaCloseBtn: 'Schließen',
   },
 
   it: {
@@ -2655,6 +2962,57 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     aiErrNetwork: 'Impossibile raggiungere l’assistente in questo momento. Controlla la connessione e riprova.',
     aiErrSaveFailed: 'La ricetta è stata creata ma il salvataggio non è riuscito. Controlla i permessi e riprova.',
     aiErrGeneric: 'Si è verificato un errore tecnico durante la preparazione della ricetta. Riprova tra poco.',
+
+    navShopping: 'Spesa',
+    mealSlotLabel: 'Pasto',
+    slotBreakfast: 'Colazione',
+    slotLunch: 'Pranzo',
+    slotDinner: 'Cena',
+    slotSnack: 'Spuntino',
+    planMealBtn: 'Pianifica piatto',
+    swapDishBtn: 'Cambia piatto',
+    swapDishTitle: 'Cambia Piatto in Calendario',
+    planMealTitle: 'Pianifica Piatto',
+    searchDishPlaceholder: 'Cerca piatto o ingrediente...',
+    selectDishHint: 'Scegli un piatto per questo pasto.',
+    viewShoppingListBtn: 'Lista della spesa',
+    calendarSwappedToast: 'Piatto sostituito nel calendario.',
+    plannedDishesCount: (c) => `${c} ${c === 1 ? 'piatto' : 'piatti'}`,
+
+    shoppingEyebrow: 'Spesa dal Calendario',
+    shoppingTitle: 'Lista della Spesa Intelligente',
+    shoppingSubtitle: 'Compilata e proporzionata automaticamente dai pasti in calendario.',
+    shoppingWindow7d: 'Prossimi 7 giorni',
+    shoppingWindow14d: 'Prossimi 14 giorni',
+    shoppingWindowMonth: 'Questo mese',
+    shoppingHideChecked: 'Nascondi presi',
+    shoppingShowChecked: 'Mostra tutto',
+    shoppingUncheckAll: 'Deseleziona tutto',
+    shoppingCopyList: 'Copia lista',
+    shoppingCopiedToast: 'Lista copiata negli appunti.',
+    shoppingEmptyTitle: 'Nessun pasto pianificato in questo periodo',
+    shoppingEmptyHint: 'Pianifica i tuoi piatti nel calendario per generare automaticamente la lista.',
+    shoppingOpenCalendarBtn: 'Apri Calendario',
+    shoppingProgress: (checked, total) => `${checked} / ${total} presi`,
+    shoppingSourceSummary: (mealsCount) => `Da ${mealsCount} ${mealsCount === 1 ? 'pasto pianificato' : 'pasti pianificati'}`,
+    catProduce: 'Frutta, Verdura ed Erbe',
+    catMeatFish: 'Carne e Pesce',
+    catDairy: 'Latticini e Uova',
+    catBakery: 'Forno e Cereali',
+    catPantry: 'Dispensa e Spezie',
+    catOther: 'Altro',
+
+    offlineBannerText: 'Modalità Cucina Offline — ricette, calendario e timer restano attivi.',
+    pwaSectionTitle: 'Accesso Offline e Schermata Home',
+    pwaSectionDesc: 'Installa Maison Feuille sul dispositivo per cucinare offline con accesso immediato dalla schermata Home.',
+    pwaInstallBtn: 'Installa App',
+    pwaInstallIOSBtn: 'Aggiungi a Home',
+    pwaInstalledBadge: 'Installata sul dispositivo',
+    pwaAvailableHint: 'Cache offline attiva: ricette e foto restano disponibili anche senza rete.',
+    pwaIOSGuideTitle: 'Aggiungi a iPhone / iPad',
+    pwaIOSGuideStep1: 'Tocca il pulsante Condividi nella barra di Safari.',
+    pwaIOSGuideStep2: 'Scorri e tocca «Aggiungi alla schermata Home».',
+    pwaCloseBtn: 'Chiudi',
   },
 };
 

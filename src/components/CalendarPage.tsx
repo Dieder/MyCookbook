@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
+  ArrowLeftRight,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Plus,
+  ShoppingBasket,
   Trash2,
+  Users,
   UtensilsCrossed,
   X,
 } from 'lucide-react';
@@ -12,6 +16,7 @@ import {
   Chapter,
   LanguageCode,
   MealCalendarEntry,
+  MealSlot,
   Recipe,
 } from '../types/cookbook';
 import {
@@ -22,15 +27,33 @@ import {
   getMondayFirstWeekdays,
   getTodayDateKey,
 } from '../utils/calendar';
+import {
+  CalendarMealPickerModal,
+  CalendarPickerInitial,
+} from './CalendarMealPickerModal';
 
 interface CalendarPageProps {
   isSignedIn: boolean;
   entries: MealCalendarEntry[];
   recipes: Recipe[];
   chapters: Chapter[];
+  servingsMap: Record<string, number>;
   onSelectRecipe: (recipeId: string) => void;
   onSelectChapter: (chapterId: string) => void;
+  onAddMealEntry: (
+    recipe: Recipe,
+    dateKey: string,
+    mealSlot: MealSlot,
+    servings: number
+  ) => Promise<void>;
+  onSwapMealEntry: (
+    entryId: string,
+    recipe: Recipe,
+    mealSlot: MealSlot,
+    servings: number
+  ) => Promise<void>;
   onRemoveEntry: (entryId: string) => Promise<void>;
+  onOpenShopping: () => void;
   onSignIn: () => void;
   onGoToSettings: () => void;
   lang: LanguageCode;
@@ -78,9 +101,13 @@ export function CalendarPage({
   entries,
   recipes,
   chapters,
+  servingsMap,
   onSelectRecipe,
   onSelectChapter,
+  onAddMealEntry,
+  onSwapMealEntry,
   onRemoveEntry,
+  onOpenShopping,
   onSignIn,
   onGoToSettings,
   lang,
@@ -92,6 +119,7 @@ export function CalendarPage({
 
   const [displayYear, setDisplayYear] = useState<number>(today.getFullYear());
   const [displayMonth, setDisplayMonth] = useState<number>(today.getMonth());
+  const [pickerState, setPickerState] = useState<CalendarPickerInitial | null>(null);
 
   const chapterMap = useMemo(() => {
     const map = new Map<string, Chapter>();
@@ -159,6 +187,13 @@ export function CalendarPage({
     }).format(new Date(displayYear, displayMonth, 1));
   }, [displayYear, displayMonth, locale]);
 
+  const getSlotLabel = (slot: MealSlot): string => {
+    if (slot === 'breakfast') return t.slotBreakfast;
+    if (slot === 'lunch') return t.slotLunch;
+    if (slot === 'snack') return t.slotSnack;
+    return t.slotDinner;
+  };
+
   const handlePrevMonth = () => {
     if (displayMonth === 0) {
       setDisplayYear((y) => y - 1);
@@ -186,12 +221,44 @@ export function CalendarPage({
     const matchedRecipe = recipeMap.get(entry.recipeId);
     const courseId = matchedRecipe?.chapterId ?? entry.courseId;
     const courseChapter = chapterMap.get(courseId);
+    const effectiveServings =
+      entry.servings ?? servingsMap[entry.recipeId] ?? matchedRecipe?.baseServings ?? 4;
     return {
       title: matchedRecipe?.title ?? entry.recipeTitle,
       courseId,
       courseTitle: courseChapter?.title ?? courseId,
       heroImage: matchedRecipe?.heroImage,
+      servings: effectiveServings,
     };
+  };
+
+  const openPlanModal = (dateKey: string, mealSlot: MealSlot = 'dinner') => {
+    if (!isSignedIn) {
+      onSignIn();
+      return;
+    }
+    setPickerState({
+      mode: 'add',
+      dateKey,
+      mealSlot,
+      servings: 4,
+    });
+  };
+
+  const openSwapModal = (entry: MealCalendarEntry) => {
+    if (!isSignedIn) {
+      onSignIn();
+      return;
+    }
+    const matched = recipeMap.get(entry.recipeId);
+    setPickerState({
+      mode: 'swap',
+      entryId: entry.id,
+      dateKey: entry.date,
+      mealSlot: entry.mealSlot,
+      servings: entry.servings ?? servingsMap[entry.recipeId] ?? matched?.baseServings ?? 4,
+      currentRecipeId: entry.recipeId,
+    });
   };
 
   return (
@@ -210,9 +277,29 @@ export function CalendarPage({
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 text-xs font-mono text-[var(--text-muted)] tabular-nums shrink-0">
-          <CalendarDays className="w-4 h-4 text-[var(--accent-secondary)]" />
-          <span>{todayKey}</span>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => openPlanModal(todayKey, 'dinner')}
+            className="px-3.5 py-2 bg-[var(--accent-primary)] text-[var(--accent-primary-fg)] text-xs font-mono inline-flex items-center gap-1.5 hover:opacity-90 cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t.planMealBtn}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenShopping}
+            className="px-3.5 py-2 border border-[var(--border-line)] bg-[var(--bg-surface)] text-xs font-mono text-[var(--text-ink)] hover:border-[var(--accent-primary)] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+          >
+            <ShoppingBasket className="w-4 h-4 text-[var(--accent-secondary)]" />
+            <span>{t.viewShoppingListBtn}</span>
+          </button>
+
+          <div className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] tabular-nums ml-1">
+            <CalendarDays className="w-4 h-4 text-[var(--accent-secondary)]" />
+            <span>{todayKey}</span>
+          </div>
         </div>
       </header>
 
@@ -253,10 +340,20 @@ export function CalendarPage({
         </div>
 
         {scheduledUpcomingDays.length === 0 ? (
-          <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-6">
+          <div className="border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-6 flex flex-wrap items-center justify-between gap-4">
             <p className="text-sm font-serif italic text-[var(--text-muted)]">
               {t.noMealsUpcomingDays}
             </p>
+            {isSignedIn && (
+              <button
+                type="button"
+                onClick={() => openPlanModal(todayKey, 'dinner')}
+                className="px-3.5 py-2 border border-[var(--accent-primary)] bg-[var(--bg-paper)] text-xs font-mono text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-[var(--accent-primary-fg)] inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{t.planMealBtn}</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -284,55 +381,88 @@ export function CalendarPage({
                         </p>
                       </div>
 
-                      {day.isToday && (
-                        <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-primary)] font-medium shrink-0">
-                          {t.todayLabel}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {day.isToday && (
+                          <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-[var(--accent-primary)] font-medium">
+                            {t.todayLabel}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => openPlanModal(day.dateKey, 'dinner')}
+                          aria-label={t.planMealBtn}
+                          title={t.planMealBtn}
+                          className="w-7 h-7 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] inline-flex items-center justify-center cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Scheduled Courses with Thumbnails */}
+                    {/* Scheduled Meal Slots with Thumbnails & Quick Swap */}
                     <ul className="space-y-2.5">
                       {dayEntries.map((entry) => {
                         const info = renderCourseLink(entry);
                         return (
                           <li
                             key={entry.id}
-                            className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2.5 flex items-start justify-between gap-2.5"
+                            className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2.5 space-y-2"
                           >
-                            <div className="flex items-start gap-2.5 min-w-0">
-                              <CalendarDishThumb
-                                src={info.heroImage}
-                                alt={info.title}
-                                sizeClass="w-12 h-12"
-                                onClick={() => onSelectRecipe(entry.recipeId)}
-                              />
-                              <div className="min-w-0 space-y-0.5">
+                            <div className="flex items-center justify-between gap-2 text-[10px] font-mono uppercase tracking-[0.1em] text-[var(--accent-secondary)]">
+                              <span>{getSlotLabel(entry.mealSlot)}</span>
+                              <span className="inline-flex items-center gap-1 text-[var(--text-muted)] tabular-nums">
+                                <Users className="w-3 h-3" />
+                                {info.servings}
+                              </span>
+                            </div>
+
+                            <div className="flex items-start justify-between gap-2.5">
+                              <div className="flex items-start gap-2.5 min-w-0">
+                                <CalendarDishThumb
+                                  src={info.heroImage}
+                                  alt={info.title}
+                                  sizeClass="w-12 h-12"
+                                  onClick={() => onSelectRecipe(entry.recipeId)}
+                                />
+                                <div className="min-w-0 space-y-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => onSelectRecipe(entry.recipeId)}
+                                    className="block text-left font-serif text-sm font-medium text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer leading-snug"
+                                  >
+                                    {info.title}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => onSelectChapter(info.courseId)}
+                                    className="block text-left text-[11px] font-mono text-[var(--accent-secondary)] hover:underline cursor-pointer truncate max-w-full"
+                                  >
+                                    {info.courseTitle}
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
                                 <button
                                   type="button"
-                                  onClick={() => onSelectRecipe(entry.recipeId)}
-                                  className="block text-left font-serif text-sm font-medium text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer leading-snug"
+                                  onClick={() => openSwapModal(entry)}
+                                  aria-label={t.swapDishBtn}
+                                  title={t.swapDishBtn}
+                                  className="w-8 h-8 border border-[var(--border-subtle)] bg-[var(--bg-paper)] text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] inline-flex items-center justify-center cursor-pointer"
                                 >
-                                  {info.title}
+                                  <ArrowLeftRight className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onSelectChapter(info.courseId)}
-                                  className="block text-left text-[11px] font-mono text-[var(--accent-secondary)] hover:underline cursor-pointer"
+                                  onClick={() => void onRemoveEntry(entry.id)}
+                                  aria-label={t.removeFromCalendarAria}
+                                  title={t.removeFromCalendarAria}
+                                  className="w-8 h-8 border border-[var(--border-subtle)] bg-[var(--bg-paper)] text-[var(--text-muted)] hover:text-[var(--accent-secondary)] inline-flex items-center justify-center cursor-pointer"
                                 >
-                                  {info.courseTitle}
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => void onRemoveEntry(entry.id)}
-                              aria-label={t.removeFromCalendarAria}
-                              title={t.removeFromCalendarAria}
-                              className="p-1 text-[var(--text-muted)] hover:text-[var(--accent-secondary)] cursor-pointer shrink-0"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
                           </li>
                         );
                       })}
@@ -414,7 +544,7 @@ export function CalendarPage({
                 return (
                   <div
                     key={cell.dateKey}
-                    className={`min-h-[124px] p-2.5 border-r border-b border-[var(--border-subtle)] flex flex-col gap-1.5 ${
+                    className={`min-h-[132px] p-2.5 border-r border-b border-[var(--border-subtle)] flex flex-col gap-1.5 group/cell ${
                       !cell.inCurrentMonth
                         ? 'bg-[var(--bg-surface)]/45 opacity-65'
                         : isToday
@@ -434,6 +564,16 @@ export function CalendarPage({
                       >
                         {cell.dayNumber}
                       </span>
+
+                      <button
+                        type="button"
+                        onClick={() => openPlanModal(cell.dateKey, 'dinner')}
+                        aria-label={`${t.planMealBtn} (${cell.dateKey})`}
+                        title={t.planMealBtn}
+                        className="opacity-0 group-hover/cell:opacity-100 focus:opacity-100 w-6 h-6 border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] inline-flex items-center justify-center cursor-pointer transition-opacity"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
 
                     <div className="space-y-1.5 flex-1">
@@ -444,38 +584,44 @@ export function CalendarPage({
                             key={entry.id}
                             className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-1.5 space-y-1 group"
                           >
-                            <div className="flex items-start justify-between gap-1.5">
-                              <div className="flex items-start gap-1.5 min-w-0">
-                                <CalendarDishThumb
-                                  src={info.heroImage}
-                                  alt={info.title}
-                                  sizeClass="w-8 h-8"
-                                  onClick={() => onSelectRecipe(entry.recipeId)}
-                                />
+                            <div className="flex items-center justify-between gap-1 text-[9px] font-mono uppercase tracking-[0.08em] text-[var(--accent-secondary)]">
+                              <span className="truncate">{getSlotLabel(entry.mealSlot)}</span>
+                              <div className="flex items-center gap-0.5 shrink-0">
                                 <button
                                   type="button"
-                                  onClick={() => onSelectRecipe(entry.recipeId)}
-                                  className="text-left font-serif text-[12px] leading-tight text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer line-clamp-2 min-w-0"
+                                  onClick={() => openSwapModal(entry)}
+                                  aria-label={t.swapDishBtn}
+                                  title={t.swapDishBtn}
+                                  className="p-0.5 text-[var(--text-muted)]/70 hover:text-[var(--accent-primary)] cursor-pointer"
                                 >
-                                  {info.title}
+                                  <ArrowLeftRight className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void onRemoveEntry(entry.id)}
+                                  aria-label={t.removeFromCalendarAria}
+                                  className="p-0.5 text-[var(--text-muted)]/60 hover:text-[var(--accent-secondary)] cursor-pointer"
+                                >
+                                  <X className="w-3 h-3" />
                                 </button>
                               </div>
+                            </div>
+
+                            <div className="flex items-start gap-1.5 min-w-0">
+                              <CalendarDishThumb
+                                src={info.heroImage}
+                                alt={info.title}
+                                sizeClass="w-8 h-8"
+                                onClick={() => onSelectRecipe(entry.recipeId)}
+                              />
                               <button
                                 type="button"
-                                onClick={() => void onRemoveEntry(entry.id)}
-                                aria-label={t.removeFromCalendarAria}
-                                className="text-[var(--text-muted)]/60 hover:text-[var(--accent-secondary)] cursor-pointer shrink-0"
+                                onClick={() => onSelectRecipe(entry.recipeId)}
+                                className="text-left font-serif text-[12px] leading-tight text-[var(--text-ink)] hover:text-[var(--accent-primary)] hover:underline cursor-pointer line-clamp-2 min-w-0"
                               >
-                                <X className="w-3 h-3" />
+                                {info.title}
                               </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => onSelectChapter(info.courseId)}
-                              className="block text-left text-[10px] font-mono text-[var(--accent-secondary)] hover:underline cursor-pointer truncate max-w-full"
-                            >
-                              {info.courseTitle}
-                            </button>
                           </div>
                         );
                       })}
@@ -487,6 +633,26 @@ export function CalendarPage({
           </div>
         </div>
       </section>
+
+      <CalendarMealPickerModal
+        key={
+          pickerState
+            ? `${pickerState.mode}-${pickerState.entryId ?? pickerState.dateKey}-${pickerState.mealSlot}`
+            : 'closed'
+        }
+        initial={pickerState}
+        recipes={recipes}
+        chapters={chapters}
+        onClose={() => setPickerState(null)}
+        onConfirm={async ({ mode, entryId, dateKey, mealSlot, servings, recipe }) => {
+          if (mode === 'swap' && entryId) {
+            await onSwapMealEntry(entryId, recipe, mealSlot, servings);
+          } else {
+            await onAddMealEntry(recipe, dateKey, mealSlot, servings);
+          }
+        }}
+        lang={lang}
+      />
     </div>
   );
 }

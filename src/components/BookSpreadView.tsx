@@ -30,6 +30,7 @@ import {
   Chapter,
   LanguageCode,
   MealCalendarEntry,
+  MealSlot,
   Recipe,
   RecipeRating,
   TechniqueClip,
@@ -90,7 +91,7 @@ interface BookSpreadViewProps {
   currentUserUid: string | null;
   onSaveRating: (rating: number, note: string, existingId?: string) => Promise<void>;
   onDeleteRating: (ratingId: string) => Promise<void>;
-  onAddToCalendar: (dateKey: string) => Promise<void>;
+  onAddToCalendar: (dateKey: string, mealSlot: MealSlot) => Promise<void>;
   scheduledEntries?: MealCalendarEntry[];
   onRemoveCalendarEntry?: (entryId: string) => Promise<void>;
   onOpenCalendar?: () => void;
@@ -141,10 +142,18 @@ export function BookSpreadView({
   const [noteSavedFeedback, setNoteSavedFeedback] = useState(false);
   const [calendarBarOpen, setCalendarBarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<string>(() => getTodayDateKey());
+  const [calendarSlot, setCalendarSlot] = useState<MealSlot>('dinner');
   const [savingCalendar, setSavingCalendar] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
   const t = UI_STRINGS[lang];
   const locale = getIntlLocale(lang);
+
+  const getSlotLabel = (slot: MealSlot) => {
+    if (slot === 'breakfast') return t.slotBreakfast;
+    if (slot === 'lunch') return t.slotLunch;
+    if (slot === 'snack') return t.slotSnack;
+    return t.slotDinner;
+  };
 
   const nextSevenDays = useMemo(() => {
     const today = new Date();
@@ -186,7 +195,11 @@ export function BookSpreadView({
   useEffect(() => {
     setCalendarBarOpen(false);
     setCalendarError(null);
-  }, [recipe.id]);
+    const ch = recipe.chapterId.toLowerCase();
+    setCalendarSlot(
+      ch === 'breakfast' ? 'breakfast' : ch === 'lunch' ? 'lunch' : 'dinner'
+    );
+  }, [recipe.id, recipe.chapterId]);
 
   const legacyChapterFallback: Record<string, string> = {
     'hearth-harvest': 'comfort-food',
@@ -385,7 +398,9 @@ export function BookSpreadView({
                 className="inline-flex items-center gap-1.5 text-[var(--text-ink)] tabular-nums"
               >
                 <Check className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-                <span>{entry.date}</span>
+                <span>
+                  {entry.date} · {getSlotLabel(entry.mealSlot)}
+                </span>
                 {onRemoveCalendarEntry && (
                   <button
                     type="button"
@@ -480,14 +495,14 @@ export function BookSpreadView({
                 })}
               </div>
 
-              <form
+                <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   if (!calendarDate || savingCalendar) return;
                   setCalendarError(null);
                   setSavingCalendar(true);
                   try {
-                    await onAddToCalendar(calendarDate);
+                    await onAddToCalendar(calendarDate, calendarSlot);
                   } catch (err: unknown) {
                     setCalendarError(
                       err instanceof Error ? err.message : 'Unable to save calendar date.'
@@ -516,6 +531,30 @@ export function BookSpreadView({
                     }}
                     className="px-3 py-1.5 bg-[var(--bg-paper)] border border-[var(--border-line)] text-xs font-mono tabular-nums text-[var(--text-ink)] focus:outline-none focus:border-[var(--accent-primary)]"
                   />
+
+                  <div className="flex items-center gap-1">
+                    {(
+                      [
+                        { id: 'breakfast' as const, label: t.slotBreakfast },
+                        { id: 'lunch' as const, label: t.slotLunch },
+                        { id: 'dinner' as const, label: t.slotDinner },
+                        { id: 'snack' as const, label: t.slotSnack },
+                      ]
+                    ).map((slotOpt) => (
+                      <button
+                        key={slotOpt.id}
+                        type="button"
+                        onClick={() => setCalendarSlot(slotOpt.id)}
+                        className={`px-2.5 py-1.5 border text-[11px] font-mono cursor-pointer transition-colors ${
+                          calendarSlot === slotOpt.id
+                            ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
+                            : 'bg-[var(--bg-paper)] border-[var(--border-line)] text-[var(--text-ink)] hover:border-[var(--accent-primary)]'
+                        }`}
+                      >
+                        {slotOpt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 shrink-0">

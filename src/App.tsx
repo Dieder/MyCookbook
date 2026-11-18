@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { BookOpen, CalendarDays, Home, LayoutGrid, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, CalendarDays, Home, LayoutGrid, ShoppingBasket } from 'lucide-react';
 import { AdminPage } from './components/AdminPage';
 import { AskRecipeModal } from './components/AskRecipeModal';
 import { BookCoverFrontispiece } from './components/BookCoverFrontispiece';
@@ -11,9 +11,11 @@ import { ChaptersGallery } from './components/ChaptersGallery';
 import { CookModeOverlay } from './components/CookModeOverlay';
 import { CustomizeRecipeModal } from './components/CustomizeRecipeModal';
 import { MyRecipesPage } from './components/MyRecipesPage';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { RecipeCardsIndex } from './components/RecipeCardsIndex';
 import { RecipeEditorPage } from './components/RecipeEditorPage';
 import { SettingsPage } from './components/SettingsPage';
+import { ShoppingListPage } from './components/ShoppingListPage';
 import { TechniquePlayerModal } from './components/TechniquePlayerModal';
 import { TimerDock } from './components/TimerDock';
 import { TopNavBar } from './components/TopNavBar';
@@ -31,6 +33,7 @@ import {
   deleteCalendarEntryFromFirestore,
   formatCalendarDocId,
   subscribeUserCalendar,
+  swapCalendarEntryInFirestore,
   upsertCalendarEntryInFirestore,
 } from './lib/firestoreCalendar';
 import {
@@ -68,9 +71,11 @@ import {
   ContributorRequestStatus,
   LanguageCode,
   MealCalendarEntry,
+  MealSlot,
   Recipe,
   RecipeStatus,
   RecipeRating,
+  ShoppingDateWindow,
   TechniqueClip,
   ThemeId,
   UnitSystem,
@@ -89,6 +94,8 @@ const STORAGE_KEYS = {
   language: 'maison_feuille_language_v1',
   theme: 'maison_feuille_theme_v1',
   chaptersTaxonomySeeded: 'maison_feuille_chapters_taxonomy_v2',
+  shoppingChecked: 'maison_feuille_shopping_checked_v1',
+  shoppingWindow: 'maison_feuille_shopping_window_v1',
 };
 
 const LEGACY_CHAPTER_IDS = ['hearth-harvest', 'coastal-market', 'orchard-patisserie'];
@@ -188,6 +195,13 @@ export default function App() {
   const [kitchenNotesMap, setKitchenNotesMap] = useState<Record<string, string>>(() =>
     readStorage<Record<string, string>>(STORAGE_KEYS.notes, {})
   );
+  const [shoppingCheckedKeys, setShoppingCheckedKeys] = useState<string[]>(() =>
+    readStorage<string[]>(STORAGE_KEYS.shoppingChecked, [])
+  );
+  const [shoppingWindow, setShoppingWindow] = useState<ShoppingDateWindow>(() => {
+    const stored = readStorage<ShoppingDateWindow>(STORAGE_KEYS.shoppingWindow, '7d');
+    return stored === '7d' || stored === '14d' || stored === 'month' ? stored : '7d';
+  });
 
   const showToast = useCallback((msg: string) => {
     setToastNotice(msg);
@@ -479,6 +493,28 @@ export default function App() {
       // Ignore storage errors
     }
   }, [localDraftRecipes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.shoppingChecked,
+        JSON.stringify(shoppingCheckedKeys)
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [shoppingCheckedKeys]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.shoppingWindow,
+        JSON.stringify(shoppingWindow)
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [shoppingWindow]);
 
   // Resolve effective chapters (Firestore chapters when seeded/managed, localized if untouched defaults)
   const activeChapters = useMemo(() => {
@@ -829,11 +865,22 @@ export default function App() {
     showToast(t.ratingDeletedToast);
   };
 
-  const handleAddRecipeToCalendar = async (recipe: Recipe, dateKey: string) => {
+  const handleAddRecipeToCalendar = async (
+    recipe: Recipe,
+    dateKey: string,
+    mealSlot: MealSlot = 'dinner',
+    servings?: number
+  ) => {
     if (!user) return;
     const safeRecipeId = sanitizeDocId(recipe.id);
-    const docId = formatCalendarDocId(user.uid, dateKey, safeRecipeId);
-    const existsInCloud = calendarEntries.some((entry) => entry.id === docId);
+    const baseDocId = formatCalendarDocId(user.uid, dateKey, mealSlot, safeRecipeId);
+    const existingExact = calendarEntries.find(
+      (entry) =>
+        entry.id === baseDocId ||
+        (entry.date === dateKey &&
+          entry.mealSlot === mealSlot &&
+          entry.recipeId === safeRecipeId)
+    );
     await upsertCalendarEntryInFirestore(
       user.uid,
       {
@@ -841,15 +888,45 @@ export default function App() {
         recipeId: safeRecipeId,
         recipeTitle: recipe.title,
         courseId: recipe.chapterId,
+        mealSlot,
+        servings: servings ?? servingsMap[recipe.id] ?? recipe.baseServings,
       },
-      existsInCloud
+      existingExact?.id
     );
     showToast(t.calendarAddedToast);
+  };
+
+  const handleSwapCalendarEntry = async (
+    entryId: string,
+    recipe: Recipe,
+    mealSlot: MealSlot,
+    servings: number
+  ) => {
+    if (!user) return;
+    const safeRecipeId = sanitizeDocId(recipe.id);
+    await swapCalendarEntryInFirestore(entryId, {
+      recipeId: safeRecipeId,
+      recipeTitle: recipe.title,
+      courseId: recipe.chapterId,
+      mealSlot,
+      servings,
+    });
+    showToast(t.calendarSwappedToast);
   };
 
   const handleRemoveCalendarEntry = async (entryId: string) => {
     await deleteCalendarEntryFromFirestore(entryId);
     showToast(t.calendarRemovedToast);
+  };
+
+  const toggleShoppingItemChecked = (key: string) => {
+    setShoppingCheckedKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const handleUncheckAllShopping = () => {
+    setShoppingCheckedKeys([]);
   };
 
   const handleCreateRecipe = async (
@@ -1088,6 +1165,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen paper-folio flex flex-col">
+      <OfflineIndicator lang={language} />
+
       <TopNavBar
         activeView={activeView}
         onNavigate={navigateView}
@@ -1209,8 +1288,13 @@ export default function App() {
             currentUserUid={user?.uid ?? null}
             onSaveRating={handleSaveRecipeRating}
             onDeleteRating={handleDeleteRecipeRating}
-            onAddToCalendar={(dateKey) =>
-              handleAddRecipeToCalendar(activeRecipe, dateKey)
+            onAddToCalendar={(dateKey, mealSlot) =>
+              handleAddRecipeToCalendar(
+                activeRecipe,
+                dateKey,
+                mealSlot,
+                servingsMap[activeRecipe.id] ?? activeRecipe.baseServings
+              )
             }
             scheduledEntries={calendarEntries.filter(
               (entry) => entry.recipeId === sanitizeDocId(activeRecipe.id)
@@ -1228,11 +1312,34 @@ export default function App() {
             entries={calendarEntries}
             recipes={allRecipes}
             chapters={activeChapters}
+            servingsMap={servingsMap}
             onSelectRecipe={openRecipeSpread}
             onSelectChapter={openChaptersAt}
+            onAddMealEntry={handleAddRecipeToCalendar}
+            onSwapMealEntry={handleSwapCalendarEntry}
             onRemoveEntry={handleRemoveCalendarEntry}
+            onOpenShopping={() => navigateView('shopping')}
             onSignIn={() => void handleSignIn()}
             onGoToSettings={() => navigateView('settings')}
+            lang={language}
+          />
+        )}
+
+        {activeView === 'shopping' && (
+          <ShoppingListPage
+            isSignedIn={Boolean(user)}
+            entries={calendarEntries}
+            recipes={allRecipes}
+            servingsMap={servingsMap}
+            unitSystem={unitSystem}
+            windowType={shoppingWindow}
+            onChangeWindow={setShoppingWindow}
+            checkedKeys={shoppingCheckedKeys}
+            onToggleChecked={toggleShoppingItemChecked}
+            onUncheckAll={handleUncheckAllShopping}
+            onOpenCalendar={() => navigateView('calendar')}
+            onSelectRecipe={openRecipeSpread}
+            onSignIn={() => void handleSignIn()}
             lang={language}
           />
         )}
@@ -1363,7 +1470,7 @@ export default function App() {
               { id: 'chapters' as const, label: t.navChapters, Icon: BookOpen },
               { id: 'cards' as const, label: t.navCards, Icon: LayoutGrid },
               { id: 'calendar' as const, label: t.navCalendar, Icon: CalendarDays },
-              { id: 'settings' as const, label: t.navSettings, Icon: SlidersHorizontal },
+              { id: 'shopping' as const, label: t.navShopping, Icon: ShoppingBasket },
             ].map(({ id, label, Icon }) => {
               const isActive =
                 activeView === id || (activeView === 'spread' && id === 'chapters');

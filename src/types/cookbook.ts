@@ -4,6 +4,7 @@ export type BookView =
   | 'cards'
   | 'saved'
   | 'calendar'
+  | 'shopping'
   | 'spread'
   | 'my-recipes'
   | 'recipe-editor'
@@ -43,6 +44,8 @@ export interface RecipeRating {
   updatedAtMs?: number;
 }
 
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
 export interface MealCalendarEntry {
   id: string;
   ownerId: string;
@@ -50,7 +53,37 @@ export interface MealCalendarEntry {
   recipeId: string;
   recipeTitle: string;
   courseId: string;
+  mealSlot: MealSlot;
+  servings?: number;
   updatedAtMs?: number;
+}
+
+export type ShoppingDateWindow = '7d' | '14d' | 'month';
+
+export type ShoppingCategory =
+  | 'produce'
+  | 'meat-fish'
+  | 'dairy'
+  | 'pantry'
+  | 'bakery'
+  | 'other';
+
+export interface ShoppingItemSource {
+  entryId: string;
+  date: string;
+  mealSlot: MealSlot;
+  recipeId: string;
+  recipeTitle: string;
+}
+
+export interface ShoppingListItem {
+  key: string;
+  name: string;
+  totalAmount: number;
+  unit: string;
+  formattedAmount: string;
+  category: ShoppingCategory;
+  sources: ShoppingItemSource[];
 }
 
 export type TechniquePreset =

@@ -8,8 +8,10 @@ import {
   Scale,
   Send,
   Shield,
+  Smartphone,
   UserCheck,
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 import { User } from 'firebase/auth';
 import {
   LANGUAGES,
@@ -436,6 +438,29 @@ export function SettingsPage({
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* Section 5: Offline Access & Home-Screen Install (PWA) */}
+      <section className="border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 sm:p-7 space-y-4">
+        <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] pb-4">
+          <Smartphone className="w-4 h-4 text-[var(--accent-secondary)]" />
+          <h2 className="font-display text-2xl text-[var(--text-ink)]">
+            {t.pwaSectionTitle}
+          </h2>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-2xl">
+            <p className="font-serif text-sm text-[var(--text-ink)] leading-relaxed">
+              {t.pwaSectionDesc}
+            </p>
+            <p className="font-mono text-xs text-[var(--text-muted)]">
+              {t.pwaAvailableHint}
+            </p>
+          </div>
+
+          <PWAInstallButton lang={language} variant="settings" />
         </div>
       </section>
     </div>

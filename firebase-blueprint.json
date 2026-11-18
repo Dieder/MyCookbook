@@ -356,7 +356,7 @@
     },
     "MealCalendarEntry": {
       "title": "MealCalendarEntry",
-      "description": "A recipe scheduled onto a specific calendar date for a signed-in user.",
+      "description": "A recipe scheduled onto a specific calendar date and meal slot for a signed-in user.",
       "type": "object",
       "properties": {
         "ownerId": {
@@ -387,6 +387,14 @@
           "minLength": 1,
           "maxLength": 60,
           "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "mealSlot": {
+          "type": "string",
+          "enum": ["breakfast", "lunch", "dinner", "snack"],
+          "maxLength": 16
+        },
+        "servings": {
+          "type": "integer"
         },
         "createdAt": {
           "type": "string",

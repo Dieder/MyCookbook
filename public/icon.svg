@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#14532D" />
+  <rect x="28" y="28" width="456" height="456" rx="74" fill="none" stroke="#D6CEBE" stroke-opacity="0.35" stroke-width="4" />
+  <!-- Open Cookbook Folio + Botanical Leaf -->
+  <g fill="none" stroke="#FBF9F5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Book spine & pages -->
+    <path d="M112 168 C156 150, 212 152, 256 178 C300 152, 356 150, 400 168 L400 356 C356 338, 300 340, 256 366 C212 340, 156 338, 112 356 Z" stroke-width="14" fill="#14532D" />
+    <path d="M256 178 L256 366" stroke-width="10" stroke="#D6CEBE" />
+    <!-- Subtle ruled lines on left page -->
+    <path d="M148 220 L218 214" stroke-width="8" stroke="#D6CEBE" stroke-opacity="0.7" />
+    <path d="M148 256 L218 250" stroke-width="8" stroke="#D6CEBE" stroke-opacity="0.7" />
+    <path d="M148 292 L204 287" stroke-width="8" stroke="#D6CEBE" stroke-opacity="0.7" />
+    <!-- Leaf emblem on right page -->
+    <path d="M294 288 C294 234, 332 204, 368 206 C366 244, 340 286, 294 288 Z" stroke-width="10" fill="#FBF9F5" fill-opacity="0.16" />
+    <path d="M292 292 L352 224" stroke-width="8" />
+  </g>
+</svg>

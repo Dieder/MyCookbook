@@ -272,6 +272,8 @@ service cloud.firestore {
           'recipeId',
           'recipeTitle',
           'courseId',
+          'mealSlot',
+          'servings',
           'createdAt',
           'updatedAt'
         ]) &&
@@ -283,6 +285,8 @@ service cloud.firestore {
         data.recipeTitle is string && data.recipeTitle.size() >= 1 && data.recipeTitle.size() <= 140 &&
         data.courseId is string && data.courseId.size() >= 1 && data.courseId.size() <= 60 &&
         data.courseId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        (!('mealSlot' in data) || (data.mealSlot is string && data.mealSlot.size() <= 16 && data.mealSlot in ['breakfast', 'lunch', 'dinner', 'snack'])) &&
+        (!('servings' in data) || (data.servings is int && data.servings >= 1 && data.servings <= 48)) &&
         data.createdAt is timestamp &&
         data.updatedAt is timestamp;
     }
@@ -494,12 +498,14 @@ service cloud.firestore {
         existing().ownerId == request.auth.uid &&
         incoming().ownerId == existing().ownerId &&
         incoming().date == existing().date &&
-        incoming().recipeId == existing().recipeId &&
         incoming().createdAt == existing().createdAt &&
         incoming().updatedAt == request.time &&
         incoming().diff(existing()).affectedKeys().hasOnly([
+          'recipeId',
           'recipeTitle',
           'courseId',
+          'mealSlot',
+          'servings',
           'updatedAt'
         ]);
       allow delete: if isVerifiedUser() && isValidId(entryId) && existing().ownerId == request.auth.uid;
