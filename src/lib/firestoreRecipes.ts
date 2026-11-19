@@ -141,7 +141,7 @@ function buildRecipePayload(
       'Serve warm at the table with a seasonal pairing.',
       360
     ),
-    chefAuthor: clampNonEmpty(recipe.chefAuthor, 'Maison Feuille Contributor', 100),
+    chefAuthor: clampNonEmpty(recipe.chefAuthor, 'My Cookbook Contributor', 100),
     ingredients: recipe.ingredients.slice(0, 30),
     techniques: (recipe.techniques || []).slice(0, 4),
     steps: recipe.steps.slice(0, 15).map((step, idx) => {
@@ -208,7 +208,7 @@ function mapSnapshotDocToRecipe(d: { id: string; data: () => Record<string, unkn
       : [],
     pullQuote: String(data.pullQuote || ''),
     pairingNote: String(data.pairingNote || ''),
-    chefAuthor: String(data.chefAuthor || 'Maison Feuille Contributor'),
+    chefAuthor: String(data.chefAuthor || 'My Cookbook Contributor'),
     ingredients: Array.isArray(data.ingredients)
       ? (data.ingredients as Recipe['ingredients'])
       : [],

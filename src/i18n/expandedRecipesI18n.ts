@@ -1057,7 +1057,7 @@ const STORY_TEMPLATES: Record<
     para1: (reg, t, sea, m, s, a) =>
       `In ${reg} hoort ${t} bij het ritme van het ${sea.toLowerCase()}-seizoen: opgebouwd uit ${m.toLowerCase()}, in balans gebracht met ${s.toLowerCase()} en geparfumeerd met ${a.toLowerCase()}.`,
     para2: (f) =>
-      `In de testkeuken van Maison Feuille markeert elke kookwekker het precieze moment waarop geur en structuur samenkomen: werk rustig uit een strakke mise en place en kroon het bord vlak voor opdienen met ${f.toLowerCase()}.`,
+      `In de testkeuken van My Cookbook markeert elke kookwekker het precieze moment waarop geur en structuur samenkomen: werk rustig uit een strakke mise en place en kroon het bord vlak voor opdienen met ${f.toLowerCase()}.`,
     quote: (a, f) =>
       `“Laat ${a.toLowerCase()} eerst rustig geuren; goed koken beloont kalme timing en een heldere afwerking van ${f.toLowerCase()}.”`,
     step1Title: (t) => `Mise en Place voorbereiden voor ${t}`,
@@ -1072,7 +1072,7 @@ const STORY_TEMPLATES: Record<
     para1: (reg, t, sea, m, s, a) =>
       `À travers ${reg}, ${t} appartient au rythme de la cuisine de ${sea.toLowerCase()}—bâti sur ${m.toLowerCase()} équilibré par ${s.toLowerCase()} et parfumé de ${a.toLowerCase()}.`,
     para2: (f) =>
-      `Dans la cuisine d’essai de Maison Feuille, chaque minuteur marque l’instant où l’arôme et la texture s’accordent : soignez votre mise en place, maîtrisez la chaleur à l’œil et achevez l’assiette avec ${f.toLowerCase()}.`,
+      `Dans la cuisine d’essai de My Cookbook, chaque minuteur marque l’instant où l’arôme et la texture s’accordent : soignez votre mise en place, maîtrisez la chaleur à l’œil et achevez l’assiette avec ${f.toLowerCase()}.`,
     quote: (a, f) =>
       `« Laissez d’abord éclore ${a.toLowerCase()} en douceur ; la vraie cuisine récompense la patience et la fraîcheur de ${f.toLowerCase()}. »`,
     step1Title: (t) => `Préparer la Mise en Place pour ${t}`,
@@ -1087,7 +1087,7 @@ const STORY_TEMPLATES: Record<
     para1: (reg, t, sea, m, s, a) =>
       `En ${reg}, ${t} sigue el pulso de la cocina de ${sea.toLowerCase()}, construido sobre ${m.toLowerCase()} en equilibrio con ${s.toLowerCase()} y perfumado con ${a.toLowerCase()}.`,
     para2: (f) =>
-      `En la cocina de pruebas de Maison Feuille, cada temporizador señala el instante en que aroma y textura coinciden: ordena la mise en place, guía el fuego con calma y corona el plato con ${f.toLowerCase()}.`,
+      `En la cocina de pruebas de My Cookbook, cada temporizador señala el instante en que aroma y textura coinciden: ordena la mise en place, guía el fuego con calma y corona el plato con ${f.toLowerCase()}.`,
     quote: (a, f) =>
       `«Deja primero que ${a.toLowerCase()} libere su aroma suavemente; la buena cocina premia el temple y un toque final de ${f.toLowerCase()}.»`,
     step1Title: (t) => `Preparar Mise en Place para ${t}`,
@@ -1102,7 +1102,7 @@ const STORY_TEMPLATES: Record<
     para1: (reg, t, sea, m, s, a) =>
       `In ${reg} folgt ${t} dem Rhythmus der ${sea}-Küche—aufgebaut aus ${m.toLowerCase()}, harmonisch ergänzt durch ${s.toLowerCase()} und verfeinert mit ${a.toLowerCase()}.`,
     para2: (f) =>
-      `In der Versuchsküche von Maison Feuille markiert jeder Timer den Moment, in dem Duft und Textur zueinanderfinden: bereiten Sie Ihr Mise en Place bedacht vor und krönen Sie den Teller kurz vor dem Servieren mit ${f.toLowerCase()}.`,
+      `In der Versuchsküche von My Cookbook markiert jeder Timer den Moment, in dem Duft und Textur zueinanderfinden: bereiten Sie Ihr Mise en Place bedacht vor und krönen Sie den Teller kurz vor dem Servieren mit ${f.toLowerCase()}.`,
     quote: (a, f) =>
       `„Lassen Sie ${a.toLowerCase()} zuerst sanft duften; gute Küche belohnt ruhiges Timing und ein klares Finish aus ${f.toLowerCase()}.“`,
     step1Title: (t) => `Mise en Place vorbereiten für ${t}`,
@@ -1117,7 +1117,7 @@ const STORY_TEMPLATES: Record<
     para1: (reg, t, sea, m, s, a) =>
       `In tutta ${reg}, ${t} segue il ritmo della cucina di ${sea.toLowerCase()}, costruito su ${m.toLowerCase()} in equilibrio con ${s.toLowerCase()} e profumato con ${a.toLowerCase()}.`,
     para2: (f) =>
-      `Nella cucina di prova di Maison Feuille ogni timer segna l’istante in cui profumo e consistenza s’incontrano: prepara con ordine la mise en place e completa il piatto prima del servizio con ${f.toLowerCase()}.`,
+      `Nella cucina di prova di My Cookbook ogni timer segna l’istante in cui profumo e consistenza s’incontrano: prepara con ordine la mise en place e completa il piatto prima del servizio con ${f.toLowerCase()}.`,
     quote: (a, f) =>
       `«Lascia sbocciare piano ${a.toLowerCase()} per primo; la buona cucina premia la calma dei tempi e il tocco finale di ${f.toLowerCase()}.»`,
     step1Title: (t) => `Preparare la Mise en Place per ${t}`,

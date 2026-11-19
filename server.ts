@@ -20,7 +20,7 @@ const ai = new GoogleGenAI({
 const CHAPTER_IMAGE_MAP: Record<string, { src: string; defaultCaption: string }> = {
   breakfast: {
     src: '/src/assets/images/plate_breakfast_brioche_1794902209046.jpg',
-    defaultCaption: 'Chef’s Plate — Warm morning bistro service from the Maison Feuille kitchen.',
+    defaultCaption: 'Chef’s Plate — Warm morning bistro service from the My Cookbook kitchen.',
   },
   lunch: {
     src: '/src/assets/images/recipe_mushroom_galette_1794869454174.jpg',
@@ -28,7 +28,7 @@ const CHAPTER_IMAGE_MAP: Record<string, { src: string; defaultCaption: string }>
   },
   dinner: {
     src: '/src/assets/images/recipe_sea_bass_fennel_1794869454991.jpg',
-    defaultCaption: 'Chef’s Plate — Evening bistro table service from the Maison Feuille test kitchen.',
+    defaultCaption: 'Chef’s Plate — Evening bistro table service from the My Cookbook test kitchen.',
   },
   'comfort-food': {
     src: '/src/assets/images/recipe_duck_confit_cassoulet_1794869454292.jpg',
@@ -72,7 +72,7 @@ const CHAPTER_IMAGE_MAP: Record<string, { src: string; defaultCaption: string }>
   },
   drinks: {
     src: '/src/assets/images/plate_bistro_drinks_1794902211731.jpg',
-    defaultCaption: 'Chef’s Plate — House-infused pour and cellar aperitif from the Maison Feuille bar.',
+    defaultCaption: 'Chef’s Plate — House-infused pour and cellar aperitif from the My Cookbook bar.',
   },
 };
 
@@ -199,7 +199,7 @@ function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?:
   return {
     chapterId,
     title: String(parsed.title || 'Seasonal Bistro Dish').slice(0, 140),
-    subtitle: String(parsed.subtitle || 'Prepared fresh in the Maison Feuille kitchen').slice(
+    subtitle: String(parsed.subtitle || 'Prepared fresh in the My Cookbook kitchen').slice(
       0,
       240
     ),
@@ -213,7 +213,7 @@ function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?:
     storyExcerpt: String(
       parsed.storyExcerpt ||
         storyRaw[0] ||
-        'Crafted to order in the warm editorial kitchen of Maison Feuille.'
+        'Crafted to order in the warm editorial kitchen of My Cookbook.'
     ).slice(0, 500),
     storyParagraphs:
       storyRaw.length > 0
@@ -227,7 +227,7 @@ function normalizeRecipePayload(parsed: Record<string, unknown>, fallbackImage?:
     pairingNote: String(
       parsed.pairingNote || 'Serve alongside crusty country sourdough and a crisp seasonal pour.'
     ).slice(0, 360),
-    chefAuthor: String(parsed.chefAuthor || 'Maison Feuille Kitchen').slice(0, 100),
+    chefAuthor: String(parsed.chefAuthor || 'My Cookbook Kitchen').slice(0, 100),
     ...(parsed.customizationNote
       ? { customizationNote: String(parsed.customizationNote).slice(0, 400) }
       : {}),
@@ -412,7 +412,7 @@ async function startServer() {
 
       const response = await ai.models.generateContent({
         model: 'gemini-4-hydrogen',
-        contents: `Create a complete, authentic bistro cookbook recipe for Maison Feuille based on this request: "${prompt.trim()}".
+        contents: `Create a complete, authentic bistro cookbook recipe for My Cookbook based on this request: "${prompt.trim()}".
 Target language: ${targetLang.name} (code: "${targetLang.code}").
 Target servings (baseServings): ${targetPersons}.
 Preferred chapter: ${targetChapterLabel}.
@@ -423,7 +423,7 @@ Requirements:
 - Provide 6 to 10 realistic ingredients with both exact metricAmount/metricUnit and imperialAmount/imperialUnit scaled for ${targetPersons} persons.
 - Include 4 to 6 numbered cooking steps, each with a realistic durationSeconds (in seconds) and concise timerLabel for interactive step-by-step timers.`,
         config: {
-          systemInstruction: `You are the head chef and culinary editor of Maison Feuille, a warm seasonal bistro monograph. Produce accurate, delicious recipes written in ${targetLang.name} with crisp measurements, sensory cues, and realistic cooking times.`,
+          systemInstruction: `You are the head chef and culinary editor of My Cookbook, a warm seasonal bistro monograph. Produce accurate, delicious recipes written in ${targetLang.name} with crisp measurements, sensory cues, and realistic cooking times.`,
           responseMimeType: 'application/json',
           responseSchema: RECIPE_RESPONSE_SCHEMA,
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
@@ -484,7 +484,7 @@ Requirements:
 
       const response = await ai.models.generateContent({
         model: 'gemini-4-hydrogen',
-        contents: `Customize the following Maison Feuille recipe according to this user request: "${instruction.trim()}".
+        contents: `Customize the following My Cookbook recipe according to this user request: "${instruction.trim()}".
 Target output language: ${targetLang.name} (code: "${targetLang.code}").
 
 Current Recipe JSON:
@@ -496,7 +496,7 @@ Requirements:
 - Accurately modify title/subtitle if the main flavor or dietary profile changed, update ingredients (both metric and imperial amounts), adjust steps and durationSeconds timers accordingly, and explain the culinary adaptation clearly in customizationNote and storyParagraphs.
 - Keep chapterId as "${sanitizeChapterId(recipe.chapterId)}".`,
         config: {
-          systemInstruction: `You are the head chef of Maison Feuille adapting an existing bistro recipe to a guest’s dietary preference, flavor request, or time constraint in ${targetLang.name}, keeping measurements precise and timers accurate.`,
+          systemInstruction: `You are the head chef of My Cookbook adapting an existing bistro recipe to a guest’s dietary preference, flavor request, or time constraint in ${targetLang.name}, keeping measurements precise and timers accurate.`,
           responseMimeType: 'application/json',
           responseSchema: RECIPE_RESPONSE_SCHEMA,
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
@@ -557,7 +557,7 @@ Requirements:
 
   const port = Number(process.env.PORT) || 3000;
   app.listen(port, '0.0.0.0', () => {
-    console.log(`Maison Feuille server listening on http://0.0.0.0:${port}`);
+    console.log(`My Cookbook server listening on http://0.0.0.0:${port}`);
   });
 }
 

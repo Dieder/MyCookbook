@@ -21,8 +21,8 @@ export default defineConfig(() => {
         ],
         manifest: {
           id: '/',
-          name: 'Maison Feuille — Seasonal Bistro Cookbook',
-          short_name: 'Feuille',
+          name: 'My Cookbook — Seasonal Bistro Cookbook',
+          short_name: 'My Cookbook',
           description:
             'Seasonal bistro cookbook with meal calendar slots, auto-aggregated shopping list, and offline cooking timers.',
           theme_color: '#14532D',

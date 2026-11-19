@@ -42,6 +42,7 @@ import {
   formatMinutesLabel,
   playSubtleClick,
 } from '../utils/formatters';
+import { getDisplayUnitLabel } from '../utils/units';
 import {
   addDaysLocal,
   formatLocalDateKey,
@@ -69,7 +70,6 @@ interface BookSpreadViewProps {
   servings: number;
   onChangeServings: (servings: number) => void;
   unitSystem: UnitSystem;
-  onChangeUnitSystem: (unit: UnitSystem) => void;
   checkedIngredients: string[];
   onToggleIngredient: (ingredientId: string) => void;
   completedSteps: number[];
@@ -116,7 +116,6 @@ export function BookSpreadView({
   servings,
   onChangeServings,
   unitSystem,
-  onChangeUnitSystem,
   checkedIngredients,
   onToggleIngredient,
   completedSteps,
@@ -758,40 +757,13 @@ export function BookSpreadView({
           id="recipe-ingredients"
           className="lg:col-span-5 bg-[var(--bg-surface)] border border-[var(--border-line)] p-6 sm:p-7 space-y-6 scroll-mt-24"
         >
-          <div className="border-b border-[var(--border-line)] pb-4 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
-                {t.recipeCardEyebrow}
-              </p>
-              <h2 className="font-display text-2xl text-[var(--text-ink)] mt-0.5">
-                {t.ingredientsAndScaling}
-              </h2>
-            </div>
-
-            <div className="inline-flex border border-[var(--border-line)] bg-[var(--bg-paper)]">
-              <button
-                type="button"
-                onClick={() => onChangeUnitSystem('metric')}
-                className={`px-2.5 py-1 text-xs font-mono cursor-pointer ${
-                  unitSystem === 'metric'
-                    ? 'bg-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-                }`}
-              >
-                {t.metricShort}
-              </button>
-              <button
-                type="button"
-                onClick={() => onChangeUnitSystem('imperial')}
-                className={`px-2.5 py-1 text-xs font-mono cursor-pointer ${
-                  unitSystem === 'imperial'
-                    ? 'bg-[var(--accent-primary)] text-[var(--accent-primary-fg)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-ink)]'
-                }`}
-              >
-                {t.usShort}
-              </button>
-            </div>
+          <div className="border-b border-[var(--border-line)] pb-4">
+            <p className="text-xs font-mono uppercase tracking-[0.12em] text-[var(--accent-secondary)]">
+              {t.recipeCardEyebrow}
+            </p>
+            <h2 className="font-display text-2xl text-[var(--text-ink)] mt-0.5">
+              {t.ingredientsAndScaling}
+            </h2>
           </div>
 
           {/* Person Count Selector for Ingredients */}
@@ -883,7 +855,8 @@ export function BookSpreadView({
                 unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
               const unit =
                 unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
-              const qtyLabel = formatCulinaryQuantity(baseAmt * multiplier, unit);
+              const qtyLabel = formatCulinaryQuantity(baseAmt * multiplier, unit, lang);
+              const unitLabel = getDisplayUnitLabel(unit, lang);
 
               return (
                 <li key={ing.id} className="py-2.5">
@@ -917,7 +890,7 @@ export function BookSpreadView({
                     </span>
 
                     <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
-                      {qtyLabel} {unit}
+                      {qtyLabel} {unitLabel}
                     </span>
                   </button>
                 </li>

@@ -3,7 +3,7 @@ import { EXPANDED_RECIPES } from './expandedRecipesCatalog';
 import { IMPORTED_GITHUB_RECIPES } from './importedGitHubRecipes';
 
 export const BOOK_METADATA = {
-  brand: 'Maison Feuille',
+  brand: 'My Cookbook',
   volume: 'A public cookbook',
   title: 'The Hearth, the Coast, and the Orchard',
   subtitle: 'Seven hundred seasonal plates across fourteen chapters, their kitchen stories, and timed preparations.',

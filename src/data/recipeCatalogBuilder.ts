@@ -659,7 +659,7 @@ export function buildExpandedRecipes(
       storyExcerpt: `Rooted in ${region}, ${title} pairs ${mainIng.toLowerCase()} with ${secondaryIng.toLowerCase()}, ${aromatic.toLowerCase()}, and ${finishing.toLowerCase()}.`,
       storyParagraphs: [
         `Across ${region}, ${title} belongs to the rhythm of ${season.toLowerCase()} cooking—built from ${mainIng.toLowerCase()} balanced cleanly against ${secondaryIng.toLowerCase()} and scented with ${aromatic.toLowerCase()}.`,
-        `In the Maison Feuille test kitchen, each timer marks the moment aroma and texture align: prepare your mise en place deliberately, guide the heat by sight and sound, and crown the plate with ${finishing.toLowerCase()} just before service.`,
+        `In the My Cookbook test kitchen, each timer marks the moment aroma and texture align: prepare your mise en place deliberately, guide the heat by sight and sound, and crown the plate with ${finishing.toLowerCase()} just before service.`,
       ],
       pullQuote: `“Let ${aromatic.toLowerCase()} bloom gently first; great ${methodStyle} cooking rewards calm timing and a crisp finish of ${finishing.toLowerCase()}.”`,
       pairingNote: getPairingForChapter(chapterId, title),

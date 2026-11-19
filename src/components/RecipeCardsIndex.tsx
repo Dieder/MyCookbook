@@ -21,6 +21,7 @@ import {
 } from '../i18n/translations';
 import { Chapter, LanguageCode, Recipe, TechniqueClip, UnitSystem } from '../types/cookbook';
 import { formatCulinaryQuantity } from '../utils/formatters';
+import { getDisplayUnitLabel } from '../utils/units';
 import { resolveRecipeClips } from '../utils/youtube';
 
 interface RecipeCardsIndexProps {
@@ -468,7 +469,8 @@ export function RecipeCardsIndex({
                         unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
                       const unit =
                         unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
-                      const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit);
+                      const formatted = formatCulinaryQuantity(baseAmt * multiplier, unit, lang);
+                      const unitLabel = getDisplayUnitLabel(unit, lang);
 
                       return (
                         <li
@@ -477,7 +479,7 @@ export function RecipeCardsIndex({
                         >
                           <span className="text-[var(--text-ink)]">{ing.name}</span>
                           <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
-                            {formatted} {unit}
+                            {formatted} {unitLabel}
                           </span>
                         </li>
                       );

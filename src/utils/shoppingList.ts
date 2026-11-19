@@ -10,7 +10,7 @@ import {
 } from '../types/cookbook';
 import { addDaysLocal, formatLocalDateKey } from './calendar';
 import { formatCulinaryQuantity } from './formatters';
-import { getLocalizedUnitLabel } from './units';
+import { canonicalizeUnitKey, getDisplayUnitLabel } from './units';
 
 export const SHOPPING_CATEGORY_ORDER: ShoppingCategory[] = [
   'produce',
@@ -140,7 +140,7 @@ function normalizeUnitAndAmount(
   rawUnit: string,
   unitSystem: UnitSystem
 ): NormalizedUnitAmount {
-  const unit = rawUnit.trim().toLowerCase();
+  const unit = canonicalizeUnitKey(rawUnit).toLowerCase();
   const safeAmt = Number.isFinite(amount) && amount > 0 ? amount : 0;
 
   if (unitSystem === 'metric') {
@@ -202,11 +202,8 @@ function formatNormalizedTotal(
   }
 
   const qtyText =
-    displayAmt > 0 ? formatCulinaryQuantity(displayAmt, displayUnit) : '';
-  const localizedUnit = getLocalizedUnitLabel(displayUnit, lang);
-  // Keep compact unit tokens crisp (use short forms for standard weights/volumes)
-  const shortUnits = new Set(['g', 'kg', 'ml', 'l', 'oz', 'lb', 'fl oz']);
-  const unitLabel = shortUnits.has(displayUnit) ? displayUnit : localizedUnit;
+    displayAmt > 0 ? formatCulinaryQuantity(displayAmt, displayUnit, lang) : '';
+  const unitLabel = getDisplayUnitLabel(displayUnit, lang);
   return {
     amount: displayAmt,
     unit: displayUnit,

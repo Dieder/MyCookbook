@@ -25,6 +25,7 @@ import {
   UnitSystem,
 } from '../types/cookbook';
 import {
+  canonicalizeUnitKey,
   compressDishPhoto,
   convertImperialToMetric,
   convertMetricToImperial,
@@ -205,9 +206,9 @@ export function RecipeEditorPage({
           id: ing.id,
           name: ing.name,
           metricAmount: ing.metricAmount,
-          metricUnit: ing.metricUnit,
+          metricUnit: canonicalizeUnitKey(ing.metricUnit) || 'g',
           imperialAmount: ing.imperialAmount,
-          imperialUnit: ing.imperialUnit,
+          imperialUnit: canonicalizeUnitKey(ing.imperialUnit) || 'oz',
         }))
       : [makeEmptyIngredient(1), makeEmptyIngredient(2)]
   );
@@ -252,9 +253,9 @@ export function RecipeEditorPage({
             id: ing.id,
             name: ing.name,
             metricAmount: ing.metricAmount,
-            metricUnit: ing.metricUnit,
+            metricUnit: canonicalizeUnitKey(ing.metricUnit) || 'g',
             imperialAmount: ing.imperialAmount,
-            imperialUnit: ing.imperialUnit,
+            imperialUnit: canonicalizeUnitKey(ing.imperialUnit) || 'oz',
           }))
         : [makeEmptyIngredient(1), makeEmptyIngredient(2)]
     );
@@ -410,7 +411,7 @@ export function RecipeEditorPage({
           pairingNote: (
             pairingNote.trim() || 'Serve warm at the table with seasonal accompaniments.'
           ).slice(0, 360),
-          chefAuthor: (defaultChefAuthor.trim() || 'Maison Feuille Contributor').slice(0, 100),
+          chefAuthor: (defaultChefAuthor.trim() || 'My Cookbook Contributor').slice(0, 100),
           ingredients: validIngredients,
           techniques: (recipe?.techniques ?? []).filter((clip) =>
             Boolean(toYouTubeEmbedUrl(clip.videoUrl))

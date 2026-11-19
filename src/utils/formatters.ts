@@ -1,3 +1,5 @@
+import { LanguageCode } from '../types/cookbook';
+
 const FRACTION_MAP: Array<{ decimal: number; glyph: string }> = [
   { decimal: 0.125, glyph: '⅛' },
   { decimal: 0.25, glyph: '¼' },
@@ -10,11 +12,25 @@ const FRACTION_MAP: Array<{ decimal: number; glyph: string }> = [
   { decimal: 0.875, glyph: '⅞' },
 ];
 
-export function formatCulinaryQuantity(value: number, unit: string): string {
-  if (value <= 0) return 'To taste';
+const TO_TASTE_LABEL: Record<LanguageCode, string> = {
+  en: 'To taste',
+  nl: 'Naar smaak',
+  fr: 'Selon le goût',
+  es: 'Al gusto',
+  de: 'Nach Geschmack',
+  it: 'Q.b.',
+};
 
+export function formatCulinaryQuantity(
+  value: number,
+  unit: string,
+  lang: LanguageCode = 'en'
+): string {
+  if (value <= 0) return TO_TASTE_LABEL[lang] ?? TO_TASTE_LABEL.en;
+
+  const normUnit = unit.trim().toLowerCase();
   // Keep metric grams/ml cleanly rounded
-  if (unit === 'g' || unit === 'ml') {
+  if (normUnit === 'g' || normUnit === 'gram' || normUnit === 'ml') {
     const rounded = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
     return `${rounded}`;
   }

@@ -4,10 +4,11 @@ import {
   formatPersonLabel,
   UI_STRINGS,
 } from '../i18n/translations';
-import { Chapter, LanguageCode, Recipe } from '../types/cookbook';
+import { Chapter, LanguageCode, Recipe, UnitSystem } from '../types/cookbook';
 import { parseApiJsonSafe, toHumanReadableAiError } from '../utils/aiError';
-import { formatMinutesLabel } from '../utils/formatters';
+import { formatCulinaryQuantity, formatMinutesLabel } from '../utils/formatters';
 import { StoryMarkupRenderer } from '../utils/storyMarkup';
+import { getDisplayUnitLabel } from '../utils/units';
 
 interface AskRecipeModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface AskRecipeModalProps {
   isSignedIn: boolean;
   canContribute: boolean;
   onOpenSettings: () => void;
+  unitSystem: UnitSystem;
   lang: LanguageCode;
 }
 
@@ -30,6 +32,7 @@ export function AskRecipeModal({
   isSignedIn,
   canContribute,
   onOpenSettings,
+  unitSystem,
   lang,
 }: AskRecipeModalProps) {
   const [prompt, setPrompt] = useState('');
@@ -181,17 +184,24 @@ export function AskRecipeModal({
                   )}
                 </p>
                 <ul className="divide-y divide-[var(--border-subtle)] mt-2">
-                  {resultRecipe.ingredients.map((ing) => (
-                    <li
-                      key={ing.id}
-                      className="py-1.5 flex items-baseline justify-between gap-2 text-xs font-serif"
-                    >
-                      <span className="text-[var(--text-ink)]">{ing.name}</span>
-                      <span className="font-mono text-[var(--accent-secondary)] tabular-nums shrink-0">
-                        {ing.metricAmount} {ing.metricUnit}
-                      </span>
-                    </li>
-                  ))}
+                  {resultRecipe.ingredients.map((ing) => {
+                    const amt =
+                      unitSystem === 'metric' ? ing.metricAmount : ing.imperialAmount;
+                    const unit =
+                      unitSystem === 'metric' ? ing.metricUnit : ing.imperialUnit;
+                    return (
+                      <li
+                        key={ing.id}
+                        className="py-1.5 flex items-baseline justify-between gap-2 text-xs font-serif"
+                      >
+                        <span className="text-[var(--text-ink)]">{ing.name}</span>
+                        <span className="font-mono text-[var(--accent-secondary)] tabular-nums shrink-0">
+                          {formatCulinaryQuantity(amt, unit, lang)}{' '}
+                          {getDisplayUnitLabel(unit, lang)}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 

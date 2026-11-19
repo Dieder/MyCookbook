@@ -1270,7 +1270,6 @@ export default function App() {
             servings={servingsMap[activeRecipe.id] ?? activeRecipe.baseServings}
             onChangeServings={(s) => updateServings(activeRecipe.id, s)}
             unitSystem={unitSystem}
-            onChangeUnitSystem={setUnitSystem}
             checkedIngredients={checkedIngredientsMap[activeRecipe.id] ?? []}
             onToggleIngredient={(ingId) => toggleIngredient(activeRecipe.id, ingId)}
             completedSteps={completedStepsMap[activeRecipe.id] ?? []}
@@ -1375,7 +1374,7 @@ export default function App() {
               userProfile?.displayName ||
               user?.displayName ||
               user?.email?.split('@')[0] ||
-              'Maison Feuille Contributor'
+              'My Cookbook Contributor'
             }
             unitSystem={unitSystem}
             onSaveRecipe={handleSaveContributorRecipe}
@@ -1531,6 +1530,7 @@ export default function App() {
         isSignedIn={Boolean(user)}
         canContribute={canContribute}
         onOpenSettings={() => navigateView('settings')}
+        unitSystem={unitSystem}
         lang={language}
       />
 

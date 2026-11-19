@@ -627,7 +627,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Adapting Recipe...',
     applyAiCustomization: 'Apply AI Customization',
 
-    footerColophon: 'Maison Feuille · Seasonal Bistro Monograph · Rue des Martyrs Kitchen Notes',
+    footerColophon: 'My Cookbook · Seasonal Bistro Monograph · Rue des Martyrs Kitchen Notes',
     toastSavedCloud: 'New recipe saved to your Cookbook database.',
     toastSavedLocal: 'Recipe added! Sign in anytime to save it to the cloud database.',
     toastMigratedCloud: 'Your new recipes have been saved to your Cookbook database.',
@@ -884,7 +884,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Offline Kitchen Mode — cached recipes, calendar, and timers remain available.',
     pwaSectionTitle: 'Offline Access & Home Screen',
-    pwaSectionDesc: 'Install Maison Feuille for full-screen cooking, cached recipe photos offline, and instant access from your home screen.',
+    pwaSectionDesc: 'Install My Cookbook for full-screen cooking, cached recipe photos offline, and instant access from your home screen.',
     pwaInstallBtn: 'Install App',
     pwaInstallIOSBtn: 'Add to Home Screen',
     pwaInstalledBadge: 'Installed on Device',
@@ -1051,7 +1051,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Recept aanpassen...',
     applyAiCustomization: 'AI-aanpassing Toepassen',
 
-    footerColophon: 'Maison Feuille · Seizoensbistro Monografie · Rue des Martyrs Keukennotities',
+    footerColophon: 'My Cookbook · Seizoensbistro Monografie · Rue des Martyrs Keukennotities',
     toastSavedCloud: 'Nieuw recept opgeslagen in je Kookboek-database.',
     toastSavedLocal: 'Recept toegevoegd! Log in om het in de cloud op te slaan.',
     toastMigratedCloud: 'Je nieuwe recepten zijn opgeslagen in je Kookboek-database.',
@@ -1308,7 +1308,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Offline Keukenmodus — bewaarde recepten, kalender en timers blijven werken.',
     pwaSectionTitle: 'Offline Gebruik & Beginscherm',
-    pwaSectionDesc: 'Installeer Maison Feuille op je beginscherm voor volledig scherm, offline receptfoto’s en snelle toegang in de keuken.',
+    pwaSectionDesc: 'Installeer My Cookbook op je beginscherm voor volledig scherm, offline receptfoto’s en snelle toegang in de keuken.',
     pwaInstallBtn: 'App Installeren',
     pwaInstallIOSBtn: 'Zet op Beginscherm',
     pwaInstalledBadge: 'Geïnstalleerd op Apparaat',
@@ -1475,7 +1475,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Adaptation en cours...',
     applyAiCustomization: 'Appliquer l’Adaptation IA',
 
-    footerColophon: 'Maison Feuille · Monographie Bistrot de Saison · Carnets Rue des Martyrs',
+    footerColophon: 'My Cookbook · Monographie Bistrot de Saison · Carnets Rue des Martyrs',
     toastSavedCloud: 'Nouvelle recette enregistrée dans votre base de données.',
     toastSavedLocal: 'Recette ajoutée ! Connectez-vous pour la synchroniser.',
     toastMigratedCloud: 'Vos nouvelles recettes ont été enregistrées dans le cloud.',
@@ -1732,7 +1732,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Mode Cuisine Hors Ligne — recettes, calendrier et minuteurs restent disponibles.',
     pwaSectionTitle: 'Accès Hors Ligne & Écran d’accueil',
-    pwaSectionDesc: 'Installez Maison Feuille sur votre appareil pour cuisiner hors connexion et y accéder depuis l’écran d’accueil.',
+    pwaSectionDesc: 'Installez My Cookbook sur votre appareil pour cuisiner hors connexion et y accéder depuis l’écran d’accueil.',
     pwaInstallBtn: 'Installer l’app',
     pwaInstallIOSBtn: 'Sur l’écran d’accueil',
     pwaInstalledBadge: 'Installée sur l’appareil',
@@ -1899,7 +1899,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Adaptando receta...',
     applyAiCustomization: 'Aplicar Adaptación IA',
 
-    footerColophon: 'Maison Feuille · Monografía Bistró de Temporada · Notas Rue des Martyrs',
+    footerColophon: 'My Cookbook · Monografía Bistró de Temporada · Notas Rue des Martyrs',
     toastSavedCloud: 'Nueva receta guardada en tu base de datos.',
     toastSavedLocal: '¡Receta añadida! Inicia sesión para guardarla en la nube.',
     toastMigratedCloud: 'Tus nuevas recetas se guardaron en tu base de datos.',
@@ -2156,7 +2156,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Modo Cocina Sin Conexión — recetas, calendario y temporizadores siguen activos.',
     pwaSectionTitle: 'Modo Sin Conexión e Instalación',
-    pwaSectionDesc: 'Instala Maison Feuille en tu pantalla de inicio para cocinar sin conexión con acceso inmediato.',
+    pwaSectionDesc: 'Instala My Cookbook en tu pantalla de inicio para cocinar sin conexión con acceso inmediato.',
     pwaInstallBtn: 'Instalar App',
     pwaInstallIOSBtn: 'Añadir a Inicio',
     pwaInstalledBadge: 'Instalada en el dispositivo',
@@ -2323,7 +2323,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Rezept wird angepasst...',
     applyAiCustomization: 'KI-Anpassung anwenden',
 
-    footerColophon: 'Maison Feuille · Saisonale Bistro-Monografie · Küchennotizen Rue des Martyrs',
+    footerColophon: 'My Cookbook · Saisonale Bistro-Monografie · Küchennotizen Rue des Martyrs',
     toastSavedCloud: 'Neues Rezept in deiner Kochbuch-Datenbank gespeichert.',
     toastSavedLocal: 'Rezept hinzugefügt! Melde dich an, um es in der Cloud zu sichern.',
     toastMigratedCloud: 'Deine neuen Rezepte wurden in deiner Datenbank gesichert.',
@@ -2580,7 +2580,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Offline-Küchenmodus — Rezepte, Kalender und Timer bleiben verfügbar.',
     pwaSectionTitle: 'Offline-Modus & Startbildschirm',
-    pwaSectionDesc: 'Installiere Maison Feuille auf deinem Gerät für Offline-Zugriff in der Küche und Vollbildmodus.',
+    pwaSectionDesc: 'Installiere My Cookbook auf deinem Gerät für Offline-Zugriff in der Küche und Vollbildmodus.',
     pwaInstallBtn: 'App installieren',
     pwaInstallIOSBtn: 'Zum Home-Bildschirm',
     pwaInstalledBadge: 'Auf Gerät installiert',
@@ -2747,7 +2747,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
     adaptingRecipe: 'Adattamento in corso...',
     applyAiCustomization: 'Applica Adattamento IA',
 
-    footerColophon: 'Maison Feuille · Monografia Bistrot di Stagione · Note Rue des Martyrs',
+    footerColophon: 'My Cookbook · Monografia Bistrot di Stagione · Note Rue des Martyrs',
     toastSavedCloud: 'Nuova ricetta salvata nel database del Ricettario.',
     toastSavedLocal: 'Ricetta aggiunta! Accedi per salvarla nel cloud.',
     toastMigratedCloud: 'Le tue nuove ricette sono state salvate nel database.',
@@ -3004,7 +3004,7 @@ export const UI_STRINGS: Record<LanguageCode, UIStrings> = {
 
     offlineBannerText: 'Modalità Cucina Offline — ricette, calendario e timer restano attivi.',
     pwaSectionTitle: 'Accesso Offline e Schermata Home',
-    pwaSectionDesc: 'Installa Maison Feuille sul dispositivo per cucinare offline con accesso immediato dalla schermata Home.',
+    pwaSectionDesc: 'Installa My Cookbook sul dispositivo per cucinare offline con accesso immediato dalla schermata Home.',
     pwaInstallBtn: 'Installa App',
     pwaInstallIOSBtn: 'Aggiungi a Home',
     pwaInstalledBadge: 'Installata sul dispositivo',
@@ -3052,7 +3052,7 @@ export interface LocalizedBookMeta {
 
 export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
   en: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'A public cookbook',
     title: 'The Hearth, the Coast, and the Orchard',
     subtitle: 'Seven hundred seasonal plates across fourteen chapters, their kitchen stories, and timed preparations.',
@@ -3061,7 +3061,7 @@ export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
       'A true bistro dish is never rushed, yet every decisive moment happens by the clock—the instant butter begins to foam noisette, the three minutes an emulsion holds over gentle heat, the quiet rest before carving. Turn these pages as you would a linen-bound notebook kept beside the range.',
   },
   nl: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'Een openbaar kookboek',
     title: 'De Haard, de Kust en de Boomgaard',
     subtitle: 'Zevenhonderd seizoensgebonden gerechten in veertien hoofdstukken, hun keukenverhalen en nauwkeurig getimede bereidingen.',
@@ -3070,7 +3070,7 @@ export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
       'Een echt bistrogerecht wordt nooit gehaast, maar elk beslissend moment draait om de klok—het ogenblik waarop boter begint te bruisen tot noisette, de drie minuten dat een emulsie bindt op zacht vuur, de rust voor het trancheren. Sla deze pagina’s om als een linnen notitieboek naast het fornuis.',
   },
   fr: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'Un livre de cuisine public',
     title: 'L’Âtre, le Rivage et le Verger',
     subtitle: 'Sept cents assiettes de saison en quatorze chapitres, leurs récits de cuisine et leurs préparations minutées.',
@@ -3079,7 +3079,7 @@ export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
       'Un vrai plat de bistrot ne se presse jamais, mais chaque instant décisif obéit à l’horloge : l’instant où le beurre mousse noisette, les trois minutes où l’émulsion se serre à feu doux, le repos silencieux avant la découpe. Feuilletez ces pages comme un carnet relié de lin posé près des fourneaux.',
   },
   es: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'Un libro de cocina público',
     title: 'El Hogar, la Costa y el Huerto',
     subtitle: 'Setecientos platos de temporada en catorce capítulos, sus historias de cocina y preparaciones cronometradas.',
@@ -3088,7 +3088,7 @@ export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
       'Un verdadero plato de bistró nunca se apresura, pero cada momento decisivo sucede al compás del reloj: el instante en que la mantequilla espumea tostada, los tres minutos en que liga una emulsión a fuego suave, el reposo antes de trinchar. Pasa estas páginas como un cuaderno de lino junto al fogón.',
   },
   de: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'Ein öffentliches Kochbuch',
     title: 'Der Herd, die Küste und der Obstgarten',
     subtitle: 'Siebenhundert saisonale Gerichte in vierzehn Kapiteln, ihre Küchengeschichten und zeitlich abgestimmte Zubereitungen.',
@@ -3097,7 +3097,7 @@ export const BOOK_METADATA_I18N: Record<LanguageCode, LocalizedBookMeta> = {
       'Ein echtes Bistrogericht wird niemals gehetzt, doch jeder entscheidende Moment folgt der Uhr: der Augenblick, in dem Butter nussbraun schäumt, die drei Minuten einer Emulsion über sanfter Hitze, die Ruhezeit vor dem Tranchieren. Blättern Sie durch diese Seiten wie durch ein Leinengebundenes Notizbuch neben dem Herd.',
   },
   it: {
-    brand: 'Maison Feuille',
+    brand: 'My Cookbook',
     volume: 'Un ricettario pubblico',
     title: 'Il Focolare, la Costa e il Frutteto',
     subtitle: 'Settecento piatti stagionali in quattordici capitoli, i loro racconti di cucina e le preparazioni cronometrate.',

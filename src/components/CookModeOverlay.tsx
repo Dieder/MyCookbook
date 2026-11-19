@@ -24,6 +24,7 @@ import {
   formatCulinaryQuantity,
   playSubtleClick,
 } from '../utils/formatters';
+import { getDisplayUnitLabel } from '../utils/units';
 import { resolveStepClip } from '../utils/youtube';
 
 interface CookModeOverlayProps {
@@ -328,7 +329,8 @@ export function CookModeOverlay({
                 >
                   <span className="text-[var(--text-ink)]">{ing.name}</span>
                   <span className="font-mono text-xs text-[var(--accent-secondary)] tabular-nums whitespace-nowrap shrink-0">
-                    {formatCulinaryQuantity(amt * multiplier, unit)} {unit}
+                    {formatCulinaryQuantity(amt * multiplier, unit, lang)}{' '}
+                    {getDisplayUnitLabel(unit, lang)}
                   </span>
                 </li>
               );
